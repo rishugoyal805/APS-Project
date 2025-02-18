@@ -20,38 +20,50 @@ void parseCSV(const string &filename) {
     }
 
     string line;
-    vector<string> categories; // Store category headers
-
-    // Read the header row (category names)
-    if (getline(file, line)) {
-        stringstream ss(line);
-        string category;
-        
-        getline(ss, category, ','); // Skip first column (Date)
-        while (getline(ss, category, ',')) {
-            categories.push_back(category);
-        }
-    }
 
     // Read each row of data
     while (getline(file, line)) {
         stringstream ss(line);
-        string date, amountStr;
+        string fullDate, amountStr;
         
-        getline(ss, date, ','); // Extract date
+        getline(ss, fullDate, ','); // Extract date
 
-        // Iterate through all categories in the row
-        for (size_t i = 0; i < categories.size(); i++) {
-            if (!getline(ss, amountStr, ',')) {
-                continue;
+        // ✅ Validate Date Length Before Using `substr()`
+        if (fullDate.length() < 10) {
+            cerr << "Warning: Invalid date format in row: " << line << endl;
+            continue;
+        }
+
+        int month = stoi(fullDate.substr(5, 2)) - 1;  // Convert "MM" to 0-based index
+        int day = stoi(fullDate.substr(8, 2)) - 1;    // Convert "DD" to 0-based index
+
+        // ✅ Validate Month and Day Range
+        if (month < 0 || month > 11 || day < 0 || day > 30) {
+            cerr << "Warning: Invalid date in row: " << line << endl;
+            continue;
+        }
+
+        // ✅ Read essential category amounts
+        for (size_t i = 0; i < essentialCategories.size(); i++) {
+            if (getline(ss, amountStr, ',')) {
+                try {
+                    int amount = stoi(amountStr);
+                    expenseData[month][day].first[i] += amount;
+                } catch (...) {
+                    cerr << "Warning: Invalid amount in row: " << line << endl;
+                }
             }
+        }
 
-            try {
-                double amount = stod(amountStr);
-                Expense newExpense = {categories[i], amount};
-                expenseData[date][categories[i]].push_back(newExpense);
-            } catch (exception &e) {
-                cerr << "Warning: Invalid amount in row: " << line << endl;
+        // ✅ Read non-essential category amounts
+        for (size_t i = 0; i < nonEssentialCategories.size(); i++) {
+            if (getline(ss, amountStr, ',')) {
+                try {
+                    int amount = stoi(amountStr);
+                    expenseData[month][day].second[i] += amount;
+                } catch (...) {
+                    cerr << "Warning: Invalid amount in row: " << line << endl;
+                }
             }
         }
     }
@@ -65,28 +77,53 @@ bool validateDateFormat(const string &date) {
 }
 
 void displayExpenses() {
-    if (expenseData.empty()) {
-        cout << "No expenses recorded." << endl;
-        return;
-    }
+    bool hasData = false;
 
-    cout << "\n---------------------------------------------\n";
-    cout << "|    Date    |   Category   |    Amount ($)  |\n";
-    cout << "---------------------------------------------\n";
+    cout << "\n------------------------------------------------------\n";
+    cout << "|    Date    |  Essential Expenses  | Non-Essential Expenses |\n";
+    cout << "------------------------------------------------------\n";
 
-    for (const auto &dateEntry : expenseData) {
-        for (const auto &categoryEntry : dateEntry.second) {
-            for (const auto &exp : categoryEntry.second) {
-                cout << "| " << setw(10) << left << dateEntry.first
-                     << "| " << setw(12) << left << categoryEntry.first
-                     << "| " << setw(12) << fixed << setprecision(2) << exp.amount << " |\n";
+    for (int month = 0; month < 12; month++) {
+        for (int day = 0; day < 31; day++) {
+            // ✅ Check if all expenses for the day are zero
+            bool hasExpense = false;
+            for (int val : expenseData[month][day].first) {
+                if (val > 0) { hasExpense = true; break; }
             }
+            for (int val : expenseData[month][day].second) {
+                if (val > 0) { hasExpense = true; break; }
+            }
+
+            if (!hasExpense) continue; // Skip empty days
+
+            hasData = true;
+
+            // ✅ Format date correctly
+            cout << "| " << "2024-" << setw(2) << month + 1
+                 << "-" << setw(2) << day + 1 << " | ";
+
+            // ✅ Print essential expenses
+            for (int amount : expenseData[month][day].first) {
+                cout << setw(5) << amount << " ";
+            }
+            cout << "| ";
+
+            // ✅ Print non-essential expenses
+            for (int amount : expenseData[month][day].second) {
+                cout << setw(5) << amount << " ";
+            }
+            cout << "|\n";
         }
     }
-    cout << "---------------------------------------------\n";
+
+    if (!hasData) {
+        cout << "No expenses recorded." << endl;
+    }
+
+    cout << "------------------------------------------------------\n";
 }
 
-// Function to add a new expense with user input
+//Function to add a new expense with user input
 void addExpense() {
     string date;
     cout << "Enter the date (YYYY-MM-DD): ";
@@ -98,11 +135,27 @@ void addExpense() {
         return;
     }
 
-    vector<string> categories = {"food", "travel", "work", "regular_expenses", "fun", "extra", "snacks"};
+    // Extract month and day from the date
+    int month = stoi(date.substr(5, 2)) - 1; // 0-based index for month
+    int day = stoi(date.substr(8, 2)) - 1; // 0-based index for day
+
+    if (month < 0 || month >= 12 || day < 0 || day >= 31) {
+        cout << "Invalid date! Month or day out of range.\n";
+        return;
+    }
+
+    // Map to hold expenses for each category
     map<string, double> expenseEntry;
 
     // Take input for each category
-    for (const auto &category : categories) {
+    for (const auto &category : essentialCategories) {
+        double amount;
+        cout << "Enter amount for " << category << ": ";
+        cin >> amount;
+        expenseEntry[category] = amount;
+    }
+
+    for (const auto &category : nonEssentialCategories) {
         double amount;
         cout << "Enter amount for " << category << ": ";
         cin >> amount;
@@ -110,21 +163,25 @@ void addExpense() {
     }
 
     // Store in expenseData
-    for (const auto &entry : expenseEntry) {
-        Expense newExpense = {entry.first, entry.second};  // category, amount
-        if (expenseData[date][entry.first].empty()) {
-            expenseData[date][entry.first] = {newExpense};  // Initialize if empty
-        } else {
-            expenseData[date][entry.first].push_back(newExpense);  // Append new expense
-        }
+    // Update essential categories (first vector)
+    for (size_t i = 0; i < essentialCategories.size(); ++i) {
+        expenseData[month][day].first[i] += expenseEntry[essentialCategories[i]];  // Add to respective category
+    }
+
+    // Update non-essential categories (second vector)
+    for (size_t i = 0; i < nonEssentialCategories.size(); ++i) {
+        expenseData[month][day].second[i] += expenseEntry[nonEssentialCategories[i]];  // Add to respective category
     }
 
     // Append to CSV file
     ofstream file("filename.csv", ios::app);  // Append mode
     if (file.is_open()) {
-        file << "\n";
-        file << date;
-        for (const auto &category : categories) {
+        file << "\n" << date;
+        // Append expenses for each category
+        for (const auto &category : essentialCategories) {
+            file << "," << expenseEntry[category];
+        }
+        for (const auto &category : nonEssentialCategories) {
             file << "," << expenseEntry[category];
         }
         file.close();
@@ -135,36 +192,137 @@ void addExpense() {
 }
 
 void updateExpense() {
+    string filename = "filename.csv";
     string date, category;
     double newAmount;
-    
+
     // Take user input
     cout << "Enter the date (YYYY-MM-DD): ";
     cin >> date;
-    cout << "Enter the category: ";
-    cin >> category;
-    cout << "Enter the new amount: ";
-    cin >> newAmount;
 
-    // ✅ Check if the date exists in `expenseData`
-    if (expenseData.find(date) != expenseData.end() &&
-        expenseData[date].find(category) != expenseData[date].end()) {
-        
-        // ✅ Update amount for all expenses in the given category
-        for (auto &exp : expenseData[date][category]) {
-            exp.amount = newAmount;
+    // Validate Date Format
+    if (!validateDateFormat(date)) {
+        cout << "Invalid date format! Please enter in YYYY-MM-DD format.\n";
+        return;
+    }
+
+    // Extract month and day from the date
+    int month = stoi(date.substr(5, 2)) - 1; // 0-based index for month
+    int day = stoi(date.substr(8, 2)) - 1; // 0-based index for day
+
+    if (month < 0 || month >= 12 || day < 0 || day >= 31) {
+        cout << "Invalid date! Month or day out of range.\n";
+        return;
+    }
+
+    // ✅ Check if the month and day exist in `expenseData`
+    if (month < expenseData.size() && day < expenseData[month].size()) {
+
+        // Take input for category and new amount
+        cout << "Enter the category to update: ";
+        cin >> category;
+        cout << "Enter the new amount: ";
+        cin >> newAmount;
+
+        // ✅ Check if the category exists for the given date
+        bool categoryFound = false;
+
+        // Update amount for the specified category in memory
+        for (auto &exp : expenseData[month][day].first) {
+            if (essentialCategories[&exp - &expenseData[month][day].first[0]] == category) {
+                exp = newAmount;
+                categoryFound = true;
+                break;
+            }
+        }
+        for (auto &exp : expenseData[month][day].second) {
+            if (nonEssentialCategories[&exp - &expenseData[month][day].second[0]] == category) {
+                exp = newAmount;
+                categoryFound = true;
+                break;
+            }
+        }
+
+        if (!categoryFound) {
+            cout << "Category not found for the specified date!" << endl;
+            return;
         }
 
         cout << "Expense updated successfully in memory!" << endl;
 
-        // ✅ Save updated `expenseData` to the CSV file
-        saveToCSV("filename.csv");
+        // Open the CSV file for reading
+        ifstream inFile(filename);
+        if (!inFile.is_open()) {
+            cerr << "Error: Cannot open file " << filename << " for reading.\n";
+            return;
+        }
+
+        // Create a temporary file to write the updated content
+        ofstream outFile("temp.csv");
+        if (!outFile.is_open()) {
+            cerr << "Error: Cannot open temporary file for writing.\n";
+            inFile.close();
+            return;
+        }
+
+        string line;
+        bool found = false;
+
+        // Read the first line (header) and keep it
+        if (getline(inFile, line)) {
+            outFile << line << "\n"; // Keep header row
+        }
+
+        // Read the file line by line and update the specific row if found
+        while (getline(inFile, line)) {
+            stringstream ss(line);
+            string recordDate, recordCategory;
+            getline(ss, recordDate, ','); // Get the date from the line
+            getline(ss, recordCategory, ','); // Get the category from the line
+
+            // Check if the current row matches the date
+            if (recordDate == date) {
+                found = true;
+
+                // Replace the amount with the new value in the respective category
+                stringstream newLineStream;
+                newLineStream << recordDate;
+
+                // Append the new updated expenses for each category
+                for (const auto &category : essentialCategories) {
+                    newLineStream << "," << expenseData[month][day].first[&category - &essentialCategories[0]];
+                }
+                for (const auto &category : nonEssentialCategories) {
+                    newLineStream << "," << expenseData[month][day].second[&category - &nonEssentialCategories[0]];
+                }
+
+                outFile << newLineStream.str(); // Write the updated line
+            } else {
+                // If no update, just write the line as it is
+                outFile << line;
+            }
+            outFile << "\n";
+        }
+
+        inFile.close();
+        outFile.close();
+
+        // Replace the old file with the new one
+        if (found) {
+            remove(filename.c_str()); // Delete the old file
+            rename("temp.csv", filename.c_str()); // Rename the temporary file to the original filename
+            cout << "Expense for date " << date << " has been updated successfully.\n";
+        } else {
+            remove("temp.csv"); // If no matching record is found, remove the temporary file
+            cout << "Expense not found for the entered date.\n";
+        }
 
     } else {
-        cout << "Expense not found!" << endl;
+        cout << "Expense not found in the data structure!" << endl;
     }
 }
 
+// Function to delete expenses for a given date
 void deleteExpenses() {
     string filename = "filename.csv";
     string date;
@@ -177,12 +335,27 @@ void deleteExpenses() {
         return;
     }
 
+    // Extract month and day from the date
+    int month = stoi(date.substr(5, 2)) - 1; // 0-based index for month
+    int day = stoi(date.substr(8, 2)) - 1; // 0-based index for day
+
+    if (month < 0 || month >= 12 || day < 0 || day >= 31) {
+        cout << "Invalid date! Month or day out of range.\n";
+        return;
+    }
+
+    // Clear the expenses for the specified date
+    expenseData[month][day].first = {0, 0, 0}; // Clear essential category expenses
+    expenseData[month][day].second = {0, 0, 0}; // Clear non-essential category expenses
+
+    // Open the CSV file for reading
     ifstream inFile(filename);
     if (!inFile.is_open()) {
         cerr << "Error: Cannot open file " << filename << " for reading.\n";
         return;
     }
 
+    // Create a temporary file to write the updated content
     ofstream outFile("temp.csv");
     if (!outFile.is_open()) {
         cerr << "Error: Cannot open temporary file for writing.\n";
@@ -196,21 +369,22 @@ void deleteExpenses() {
 
     // Read the first line (header) and keep it
     if (getline(inFile, line)) {
-        outFile << line << "\n"; // Keep header row
+        outFile << line << "\n"; // Keep the header row
     }
 
-    // Read the file line by line and write all lines except the ones with the given date
+    // Read the file line by line and write all lines except the one with the given date
     while (getline(inFile, line)) {
         stringstream ss(line);
         string recordDate;
         getline(ss, recordDate, ',');
 
+        // If the date matches, skip writing this line to the new file
         if (recordDate == date) {
             found = true; // Mark that the date was found and will be deleted
-            continue; // Skip writing this line to the new file
+            continue; // Skip writing this line
         }
 
-        // ✅ Ensure no extra blank lines in CSV
+        // Ensure no extra blank lines in CSV (write the remaining lines)
         if (!isFirstLine) {
             outFile << "\n"; // Add newline only before new entries (not at the end)
         }
@@ -224,63 +398,13 @@ void deleteExpenses() {
 
     // Replace the old file with the new one
     if (found) {
-        remove(filename.c_str());
-        rename("temp.csv", filename.c_str());
+        remove(filename.c_str()); // Delete the old file
+        rename("temp.csv", filename.c_str()); // Rename the temporary file to the original filename
         cout << "Expenses for date " << date << " have been deleted successfully.\n";
     } else {
-        remove("temp.csv");
+        remove("temp.csv"); // If no matching date is found, remove the temporary file
         cout << "No expenses found for the entered date.\n";
     }
-}
-
-void saveToCSV(const string &filename) {
-    ofstream file(filename, ios::trunc); // Overwrites the file
-    if (!file.is_open()) {
-        cerr << "Error: Cannot open file for writing: " << filename << endl;
-        return;
-    }
-
-    // ✅ Step 1: Get a list of all categories
-    set<string> allCategories;
-    for (const auto &dateEntry : expenseData) {
-        for (const auto &categoryEntry : dateEntry.second) {
-            allCategories.insert(categoryEntry.first);
-        }
-    }
-
-    // ✅ Step 2: Write header row (Date, Food, Travel, Work, etc.)
-    file << "Date";
-    for (const auto &category : allCategories) {
-        file << "," << category;
-    }
-    file << "\n";
-
-    // ✅ Step 3: Write expense data in proper format
-    for (const auto &dateEntry : expenseData) {
-        file << dateEntry.first; // Write Date
-
-        // Store category expenses for the current date
-        map<string, double> categoryAmounts;
-        for (const auto &categoryEntry : dateEntry.second) {
-            double totalAmount = 0;
-            for (const auto &exp : categoryEntry.second) {
-                totalAmount += exp.amount;
-            }
-            categoryAmounts[categoryEntry.first] = totalAmount;
-        }
-
-        // Write category amounts in correct order
-        for (const auto &category : allCategories) {
-            if (categoryAmounts.find(category) != categoryAmounts.end()) {
-                file << "," << categoryAmounts[category]; // Write amount
-            } else {
-                file << ","; // Write empty value if category not present
-            }
-        }
-    }
-
-    file.close();
-    cout << "Expenses saved successfully to " << filename << "!\n";
 }
 
 // Main function
@@ -302,7 +426,7 @@ int main() {
         cout << "\n2. Add Expense";
         cout << "\n3. Update Expense";
         cout << "\n4. Delete Expense";
-        cout << "\n5. Save & Exit";
+        cout << "\n5. Exit";
         cout << "\nEnter your choice: ";
         cin >> choice;
 
@@ -323,9 +447,8 @@ int main() {
                 deleteExpenses();
                 break;
             }
-            case 5: {  // Save & Exit
-                saveToCSV(filename);
-                cout << "Expenses saved. Exiting program...\n";
+            case 5: {  // Exit
+                cout << "Exiting program...\n";
                 break;
             }
             default:

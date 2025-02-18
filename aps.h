@@ -22,8 +22,12 @@ class Expense {
         double amount;
 };
 
+vector<vector<pair<vector<int>, vector<int>>>> expenseData(12, vector<pair<vector<int>, vector<int>>>(31, {{0, 0, 0}, {0, 0, 0}}));
+vector<string> essentialCategories = {"food", "regular_expenses", "work"};
+vector<string> nonEssentialCategories = {"snacks", "travel", "fun", "extra"};
+
 // Store expense data: date → category → list of expenses
-map<string, map<string, vector<Expense>>> expenseData;
+// map<string, map<string, vector<Expense>>> expenseData;
 const string filename = "filename.csv";
 // Function declarations
 bool isValidFile(const string &filename);
