@@ -315,38 +315,12 @@ int main() {
                 addExpense();
                 break;
             }
-            // case 3: {  // Update an expense
-            //     string date, category, name;
-            //     double newAmount;
-            //     cout << "Enter date: ";
-            //     cin >> date;
-            //     cout << "Enter category: ";
-            //     cin >> category;
-            //     cout << "Enter expense name to update: ";
-            //     cin >> name;
-            //     cout << "Enter new amount: ";
-            //     cin >> newAmount;
-
-            //     updateExpense(date, category, name, newAmount);
-            //     cout << "Expense updated successfully!\n";
-            //     break;
-            // }
             case 3:{
                 updateExpense();
                 break;
             }
             case 4: {  // Delete an expense
                 deleteExpenses();
-                // string date, category, name;
-                // cout << "Enter date: ";
-                // cin >> date;
-                // cout << "Enter category: ";
-                // cin >> category;
-                // cout << "Enter expense name to delete: ";
-                // cin >> name;
-
-                // deleteExpense(date, category, name);
-                // cout << "Expense deleted successfully!\n";
                 break;
             }
             case 5: {  // Save & Exit
