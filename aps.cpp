@@ -80,7 +80,7 @@ void displayExpenses() {
     bool hasData = false;
 
     cout << "\n------------------------------------------------------\n";
-    cout << "|    Date    |  Essential Expenses  | Non-Essential Expenses |\n";
+    cout << "|    Date    |  Food  |  Regular  |  Work  |  Snaks  |  Travel  |  Fun  |  Extra  |\n";
     cout << "------------------------------------------------------\n";
 
     for (int month = 0; month < 12; month++) {
