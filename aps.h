@@ -11,7 +11,12 @@
 #include <iomanip> // Include for formatting
 #include <regex>  // For date validation
 #include <set>  // For unique categories
-
+#include <iostream>
+#include <fstream>
+#include <unordered_map>
+#include <vector>
+#include <queue>
+#include <stdexcept>
 
 using namespace std;
 
@@ -23,8 +28,8 @@ class Expense {
 };
 
 vector<vector<pair<vector<int>, vector<int>>>> expenseData(12, vector<pair<vector<int>, vector<int>>>(31, {{0, 0, 0}, {0, 0, 0}}));
-vector<string> essentialCategories = {"food", "regular_expenses", "work"};
-vector<string> nonEssentialCategories = {"snacks", "travel", "fun", "extra"};
+vector<string> essentialCategories = {"food", "work", "travel"};
+vector<string> nonEssentialCategories = {"snacks", "fun", "extra"};
 
 // Store expense data: date → category → list of expenses
 // map<string, map<string, vector<Expense>>> expenseData;
