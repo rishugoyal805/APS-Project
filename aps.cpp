@@ -14,6 +14,103 @@ bool isValidCSV(const string &line)
     return commaCount == 3; // Expecting 4 fields (date, name, category, amount)
 }
 
+void detectFraudulentTransactions()
+{
+    cout << "\nDetecting Fraudulent Transactions...\n";
+
+    vector<double> essentialSum(3, 0), nonEssentialSum(3, 0);
+    vector<int> essentialCount(3, 0), nonEssentialCount(3, 0);
+
+    for (int month = 0; month < 12; month++)
+    {
+        for (int day = 0; day < 31; day++)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (expenseData[month][day].first[i] > 0)
+                {
+                    essentialSum[i] += expenseData[month][day].first[i];
+                    essentialCount[i]++;
+                }
+                if (expenseData[month][day].second[i] > 0)
+                {
+                    nonEssentialSum[i] += expenseData[month][day].second[i];
+                    nonEssentialCount[i]++;
+                }
+            }
+        }
+    }
+
+    vector<double> essentialMean(3, 0), nonEssentialMean(3, 0);
+    vector<double> essentialSD(3, 0), nonEssentialSD(3, 0);
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (essentialCount[i] > 0)
+            essentialMean[i] = essentialSum[i] / essentialCount[i];
+        if (nonEssentialCount[i] > 0)
+            nonEssentialMean[i] = nonEssentialSum[i] / nonEssentialCount[i];
+    }
+
+    for (int month = 0; month < 12; month++)
+    {
+        for (int day = 0; day < 31; day++)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (expenseData[month][day].first[i] > 0)
+                {
+                    essentialSD[i] += pow(expenseData[month][day].first[i] - essentialMean[i], 2);
+                }
+                if (expenseData[month][day].second[i] > 0)
+                {
+                    nonEssentialSD[i] += pow(expenseData[month][day].second[i] - nonEssentialMean[i], 2);
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (essentialCount[i] > 1)
+            essentialSD[i] = sqrt(essentialSD[i] / essentialCount[i]);
+        if (nonEssentialCount[i] > 1)
+            nonEssentialSD[i] = sqrt(nonEssentialSD[i] / nonEssentialCount[i]);
+    }
+
+    cout << "\nFlagged Transactions:\n";
+    cout << "------------------------------------------------------\n";
+    cout << "|    Date    |  Category  |  Amount  |  Status  |\n";
+    cout << "------------------------------------------------------\n";
+
+    for (int month = 0; month < 12; month++)
+    {
+        for (int day = 0; day < 31; day++)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (expenseData[month][day].first[i] > essentialMean[i] + 2 * essentialSD[i])
+                {
+                    cout << "| " << "2024-"
+                         << setfill('0') << setw(2) << month + 1 << "-"
+                         << setfill('0') << setw(2) << day + 1 << " | "
+                         << essentialCategories[i] << " | "
+                         << expenseData[month][day].first[i] << " | Fraudulent |\n";
+                }
+                if (expenseData[month][day].second[i] > nonEssentialMean[i] + 2 * nonEssentialSD[i])
+                {
+                    cout << "| " << "2024-"
+                         << setfill('0') << setw(2) << month + 1 << "-"
+                         << setfill('0') << setw(2) << day + 1 << " | "
+                         << nonEssentialCategories[i] << " | "
+                         << expenseData[month][day].second[i] << " | Fraudulent |\n";
+                }
+            }
+        }
+    }
+    cout << "------------------------------------------------------\n";
+}
+
 void parseCSV(const string &filename)
 {
     ifstream file(filename);
@@ -84,6 +181,7 @@ void parseCSV(const string &filename)
             }
         }
     }
+    detectFraudulentTransactions();
     file.close();
 }
 
@@ -276,7 +374,8 @@ void updateExpense()
 
     // ✅ Check if the month and day exist in `expenseData`
     if (month < expenseData.size() && day < expenseData[month].size())
-    {   int choice;
+    {
+        int choice;
         cout << "Select a category to update:\n";
         cout << "1 - Food\n";
         cout << "2 - Work\n";
@@ -528,8 +627,8 @@ void deleteExpenses()
     }
 }
 
-void menu(){
-
+void menu()
+{
 }
 // Main function
 int main()
