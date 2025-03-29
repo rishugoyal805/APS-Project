@@ -627,52 +627,53 @@ void deleteExpenses()
     }
 }
 
-void menu()
-{
+void menu() {
     int choice;
-    do
-    {
+    do {
         cout << "\nExpense Tracker Menu:";
         cout << "\n1. Display Expenses";
         cout << "\n2. Add Expense";
         cout << "\n3. Update Expense";
         cout << "\n4. Delete Expense";
-        cout << "\n5. Exit";
+        cout << "\n5. Allocate Emergency Funds";
+        cout << "\n6. Compress Data";
+        cout << "\n7. Decompress Data";
+        cout << "\n8. Exit";
         cout << "\nEnter your choice: ";
         cin >> choice;
 
-        switch (choice)
-        {
+        switch (choice) {
         case 1:
-        { // Display all expenses
             displayExpenses();
             break;
-        }
         case 2:
-        {
             addExpense();
             break;
-        }
         case 3:
-        {
             updateExpense();
             break;
-        }
         case 4:
-        { // Delete an expense
             deleteExpenses();
             break;
-        }
-        case 5:
-        { // Exit
+        // case 5:
+        // allocateEmergencyFunds();
+        //     cout << "Allocating emergency funds...\n";
+        //     break;
+        // case 6:
+        //     updateExpenseData();
+        //     break;
+        // case 7:
+        //     restoreExpenseData();
+        //     break;
+        case 8:
             cout << "Exiting program...\n";
             break;
-        }
         default:
             cout << "Invalid choice! Please enter a valid option.\n";
         }
-    } while (choice != 5);
+    } while (choice != 8);
 }
+
 // Main function
 int main()
 {

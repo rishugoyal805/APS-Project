@@ -47,4 +47,57 @@ void saveToCSV(const string &filename);
 bool validateDateFormat(const string &date);
 // Function of algorithm
 void detectFraudulentTransactions();
+
+
+struct Edge {
+    int src, dest;
+    double weight;
+};
+
+class DisjointSet {
+public:
+    unordered_map<int, int> parent, rank;
+    void makeSet(int n) {
+        for (int i = 0; i < n; i++) {
+            parent[i] = i;
+            rank[i] = 0;
+        }
+    }
+    int find(int x) {
+        if (parent[x] != x) parent[x] = find(parent[x]);
+        return parent[x];
+    }
+    void unite(int x, int y) {
+        int rootX = find(x);
+        int rootY = find(y);
+        if (rootX != rootY) {
+            if (rank[rootX] > rank[rootY]) {
+                parent[rootY] = rootX;
+            } else if (rank[rootX] < rank[rootY]) {
+                parent[rootX] = rootY;
+            } else {
+                parent[rootY] = rootX;
+                rank[rootX]++;
+            }
+        }
+    }
+};
+
+struct HuffmanNode {
+    char data;
+    int freq;
+    HuffmanNode *left, *right;
+    HuffmanNode(char d, int f) : data(d), freq(f), left(nullptr), right(nullptr) {}
+};
+
+struct Compare {
+    bool operator()(HuffmanNode* l, HuffmanNode* r) {
+        return l->freq > r->freq;
+    }
+};
+
+
+
 #endif
+
+

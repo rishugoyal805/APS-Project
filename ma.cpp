@@ -1,117 +1,128 @@
-#include <iostream>
-#include <fstream>
-#include <unordered_map>
-#include <queue>
-#include <vector>
+#include "aps.h"
 
-using namespace std;
-
-// Caesar Cipher Encryption
-string encryptCaesar(string text, int shift) {
-    for (char &c : text) {
-        if (isalpha(c)) {
-            char base = isupper(c) ? 'A' : 'a';
-            c = (c - base + shift) % 26 + base;
+void allocateEmergencyFunds(vector<Edge> &edges, int n) {
+    DisjointSet ds;
+    ds.makeSet(n);
+    sort(edges.begin(), edges.end(), [](Edge a, Edge b) { return a.weight < b.weight; });
+    double totalCost = 0;
+    cout << "Allocating Emergency Funds Using Kruskal's Algorithm:\n";
+    for (auto &edge : edges) {
+        if (ds.find(edge.src) != ds.find(edge.dest)) {
+            ds.unite(edge.src, edge.dest);
+            totalCost += edge.weight;
+            cout << "Transfer from " << edge.src << " to " << edge.dest << " with cost " << edge.weight << "\n";
         }
     }
-    return text;
+    cout << "Total Transfer Cost: " << totalCost << "\n";
 }
 
-// Caesar Cipher Decryption
-string decryptCaesar(string text, int shift) {
-    return encryptCaesar(text, 26 - shift);
-}
-
-// Huffman Tree Node
-struct HuffmanNode {
-    char ch;
-    int freq;
-    HuffmanNode *left, *right;
-    HuffmanNode(char c, int f) : ch(c), freq(f), left(nullptr), right(nullptr) {}
-};
-
-struct Compare {
-    bool operator()(HuffmanNode* a, HuffmanNode* b) {
-        return a->freq > b->freq;
-    }
-};
-
-// Build Huffman Tree
-HuffmanNode* buildHuffmanTree(unordered_map<char, int> freq) {
+void buildHuffmanTree(const string &data, unordered_map<char, string> &huffmanCode) {
+    unordered_map<char, int> freq;
+    for (char ch : data) freq[ch]++;
     priority_queue<HuffmanNode*, vector<HuffmanNode*>, Compare> pq;
-    for (auto &p : freq) pq.push(new HuffmanNode(p.first, p.second));
+    for (auto &pair : freq) pq.push(new HuffmanNode(pair.first, pair.second));
     while (pq.size() > 1) {
         HuffmanNode *left = pq.top(); pq.pop();
         HuffmanNode *right = pq.top(); pq.pop();
         HuffmanNode *node = new HuffmanNode('\0', left->freq + right->freq);
-        node->left = left;
-        node->right = right;
+        node->left = left; node->right = right;
         pq.push(node);
     }
-    return pq.top();
+    function<void(HuffmanNode*, string)> encode = [&](HuffmanNode* node, string str) {
+        if (!node) return;
+        if (node->data != '\0') huffmanCode[node->data] = str;
+        encode(node->left, str + "0");
+        encode(node->right, str + "1");
+    };
+    encode(pq.top(), "");
 }
 
-// Generate Huffman Codes
-void generateHuffmanCodes(HuffmanNode* root, string code, unordered_map<char, string>& huffmanCode) {
-    if (!root) return;
-    if (root->ch != '\0') huffmanCode[root->ch] = code;
-    generateHuffmanCodes(root->left, code + "0", huffmanCode);
-    generateHuffmanCodes(root->right, code + "1", huffmanCode);
+string compressData(const string &data, unordered_map<char, string> &huffmanCode) {
+    string compressed = "";
+    for (char ch : data) compressed += huffmanCode[ch];
+    return compressed;
 }
 
-// Huffman Encoding
-string encodeHuffman(string text, unordered_map<char, string>& huffmanCode) {
-    string encoded = "";
-    for (char c : text) encoded += huffmanCode[c];
-    return encoded;
-}
-
-// Decompress Huffman
-string decodeHuffman(string encoded, HuffmanNode* root) {
-    string decoded = "";
-    HuffmanNode* curr = root;
-    for (char bit : encoded) {
-        curr = (bit == '0') ? curr->left : curr->right;
-        if (curr->ch != '\0') {
-            decoded += curr->ch;
-            curr = root;
+string decompressData(const string &compressed, unordered_map<char, string> &huffmanCode) {
+    unordered_map<string, char> reverseCode;
+    for (auto &pair : huffmanCode) reverseCode[pair.second] = pair.first;
+    string temp = "", decompressed = "";
+    for (char bit : compressed) {
+        temp += bit;
+        if (reverseCode.count(temp)) {
+            decompressed += reverseCode[temp];
+            temp = "";
         }
     }
-    return decoded;
+    return decompressed;
 }
 
-int main() {
-    ifstream input("filename.csv");
-    ofstream encryptedFile("encrypted.txt");
-    ofstream compressedFile("compressed.txt");
-    string data, line;
-    
-    // Read the CSV file
-    while (getline(input, line)) data += line + "\n";
-    
-    // Encrypt using Caesar Cipher
-    string encryptedData = encryptCaesar(data, 3);
-    encryptedFile << encryptedData;
-    encryptedFile.close();
-
-    // Huffman Compression
-    unordered_map<char, int> freq;
-    for (char c : encryptedData) freq[c]++;
-    HuffmanNode* root = buildHuffmanTree(freq);
+void updateExpenseData() {
+    ifstream file(filename);
+    stringstream buffer;
+    buffer << file.rdbuf();
+    string data = buffer.str();
+    file.close();
     unordered_map<char, string> huffmanCode;
-    generateHuffmanCodes(root, "", huffmanCode);
-    string compressedData = encodeHuffman(encryptedData, huffmanCode);
-    compressedFile << compressedData;
-    compressedFile.close();
-    
-    // Decompress Huffman
-    string decompressedData = decodeHuffman(compressedData, root);
-    
-    // Decrypt using Caesar Cipher
-    string decryptedData = decryptCaesar(decompressedData, 3);
-    
-    // Output the final data
-    cout << "Original Data:\n" << data;
-    cout << "\nDecrypted Data (After Compression & Decryption):\n" << decryptedData;
-    return 0;
+    buildHuffmanTree(data, huffmanCode);
+    string compressed = compressData(data, huffmanCode);
+    ofstream outFile(filename, ios::trunc);
+    outFile << compressed;
+    outFile.close();
+    cout << "Data compressed and updated successfully!\n";
 }
+
+void restoreExpenseData() {
+    ifstream file(filename);
+    stringstream buffer;
+    buffer << file.rdbuf();
+    string data = buffer.str();
+    file.close();
+    unordered_map<char, string> huffmanCode;
+    buildHuffmanTree(data, huffmanCode);
+    string decompressed = decompressData(data, huffmanCode);
+    ofstream outFile(filename, ios::trunc);
+    outFile << decompressed;
+    outFile.close();
+    cout << "Data decompressed and restored successfully!\n";
+}
+
+void displayGraph(const vector<Edge>& edges) {
+    cout << "Graph Representation:\n";
+    for (const auto& edge : edges) {
+        cout << "Account " << edge.src << " -(" << edge.weight << ")-> Account " << edge.dest << "\n";
+    }
+}
+
+void loadExpenseData(map<string, double>& expenses) {
+    ifstream file(filename);
+    if (!file) {
+        cout << "No previous expense data found." << endl;
+        return;
+    }
+    string category;
+    double amount;
+    while (file >> category >> amount) {
+        expenses[category] += amount;
+    }
+    file.close();
+}
+
+void saveExpenseData(const map<string, double>& expenses) {
+    ofstream file(filename);
+    for (const auto& entry : expenses) {
+        file << entry.first << " " << entry.second << endl;
+    }
+    file.close();
+}
+
+void listAllExpenses(const map<string, double>& expenses) {
+    cout << "All Expenses:\n";
+    for (const auto& entry : expenses) {
+        cout << entry.first << ": " << entry.second << "\n";
+    }
+}
+
+
+
+
