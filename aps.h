@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <cmath>
 #include <string>
 #include <algorithm>
 #include <iomanip> // Include for formatting
@@ -34,16 +35,16 @@ vector<string> nonEssentialCategories = {"snacks", "fun", "extra"};
 // Store expense data: date → category → list of expenses
 // map<string, map<string, vector<Expense>>> expenseData;
 const string filename = "filename.csv";
-// Function declarations
+// Function of operation to be performed on the file
 bool isValidFile(const string &filename);
 bool isValidCSV(const string &line);
 void parseCSV(const string &filename);
 void displayExpenses();
-//void addExpense(const string &date, const string &category, const Expense &expense);
 void addExpense();
 void deleteExpense();
 void updateExpense();
 void saveToCSV(const string &filename);
 bool validateDateFormat(const string &date);
-
+// Function of algorithm
+void detectFraudulentTransactions();
 #endif
