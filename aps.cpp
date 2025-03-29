@@ -629,18 +629,6 @@ void deleteExpenses()
 
 void menu()
 {
-}
-// Main function
-int main()
-{
-    string filename = "filename.csv";
-    if (!isValidFile(filename))
-    {
-        cerr << "Error: File not found or inaccessible." << endl;
-        return 1;
-    }
-    // Load existing expenses from CSV file
-    parseCSV(filename);
     int choice;
     do
     {
@@ -684,5 +672,18 @@ int main()
             cout << "Invalid choice! Please enter a valid option.\n";
         }
     } while (choice != 5);
+}
+// Main function
+int main()
+{
+    string filename = "filename.csv";
+    if (!isValidFile(filename))
+    {
+        cerr << "Error: File not found or inaccessible." << endl;
+        return 1;
+    }
+    // Load existing expenses from CSV file
+    parseCSV(filename);
+    menu();
     return 0;
 }
