@@ -627,6 +627,79 @@ void deleteExpenses()
     }
 }
 
+
+
+
+void optimizeSavingsPlan(vector<int> &nonEssentialExpenses, int &goal) {
+    int n = nonEssentialExpenses.size();
+    vector<vector<int>> dp(n + 1, vector<int>(goal + 1, -1)); // -1 means unreachable
+    vector<vector<int>> count(n + 1, vector<int>(goal + 1, 1e9));
+
+    dp[0][0] = 0;
+    count[0][0] = 0;
+
+    for (int i = 1; i <= n; i++) {
+        int expense = nonEssentialExpenses[i - 1];
+        for (int j = 0; j <= goal; j++) {
+            // Case 1: Don't take the current expense
+            if (dp[i - 1][j] != -1) {
+                dp[i][j] = dp[i - 1][j];
+                count[i][j] = count[i - 1][j];
+            }
+
+            // Case 2: Take the current expense (if it fits)
+            if (j >= expense && dp[i - 1][j - expense] != -1) {
+                int newSum = dp[i - 1][j - expense] + expense;
+                int newCount = count[i - 1][j - expense] + 1;
+
+                if (dp[i][j] == -1 || (newSum > dp[i][j]) || (newSum == dp[i][j] && newCount < count[i][j])) {
+                    dp[i][j] = newSum;
+                    count[i][j] = newCount;
+                }
+            }
+        }
+    }
+
+    // Find max achievable sum ≤ goal with fewest entries
+    int bestSavings = 0, minCount = 1e9;
+    for (int j = 0; j <= goal; j++) {
+        if (dp[n][j] != -1) {
+            if (dp[n][j] > bestSavings || (dp[n][j] == bestSavings && count[n][j] < minCount)) {
+                bestSavings = dp[n][j];
+                minCount = count[n][j];
+            }
+        }
+    }
+
+    cout << "\nTotal Savings Achieved: " << bestSavings
+         << " using " << minCount << " expense entries.\n";
+}
+
+double optimizeSavings(int &goal) {
+    vector<int> nonEssentialExpenses;
+
+    for (const auto &month : expenseData) {
+        for (const auto &day : month) {
+            const vector<int> &nonEssential = day.second;
+            for (int expense : nonEssential) {
+                if (expense != 0) {
+                    nonEssentialExpenses.push_back(expense);
+                }
+            }
+        }
+    }
+
+    cout << "\nExtracted Non-Essential Expenses:\n";
+    for (int e : nonEssentialExpenses) {
+        cout << e << " ";
+    }
+    cout << "\n";
+
+    optimizeSavingsPlan(nonEssentialExpenses, goal);
+    return 0;
+}
+
+
 void menu() {
     int choice;
     do {
@@ -638,7 +711,8 @@ void menu() {
         cout << "\n5. Allocate Emergency Funds";
         cout << "\n6. Compress Data";
         cout << "\n7. Decompress Data";
-        cout << "\n8. Exit";
+        cout << "\n8. Optimize Savings";
+        cout << "\n11. Exit";
         cout << "\nEnter your choice: ";
         cin >> choice;
 
@@ -666,12 +740,23 @@ void menu() {
         //     restoreExpenseData();
         //     break;
         case 8:
+
+            int goal;
+            cout<<" Enter your goal that is to be achived by reducing minimum  number of expenses";
+            cin>>goal;
+           
+           
+            optimizeSavings(goal);
+            
+            break;
+        case 11:
             cout << "Exiting program...\n";
             break;
+            
         default:
             cout << "Invalid choice! Please enter a valid option.\n";
         }
-    } while (choice != 8);
+    } while (choice != 11);
 }
 
 // Main function

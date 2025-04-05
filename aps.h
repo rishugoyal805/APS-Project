@@ -29,6 +29,7 @@ class Expense {
 };
 
 vector<vector<pair<vector<int>, vector<int>>>> expenseData(12, vector<pair<vector<int>, vector<int>>>(31, {{0, 0, 0}, {0, 0, 0}}));
+vector<vector<pair<vector<int>, vector<int>>>> cardid(12, vector<pair<vector<int>, vector<int>>>(31, {{0, 0, 0}, {0, 0, 0}}));
 vector<string> essentialCategories = {"food", "work", "travel"};
 vector<string> nonEssentialCategories = {"snacks", "fun", "extra"};
 
