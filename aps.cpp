@@ -1,5 +1,6 @@
 #include "aps.h"
 
+using namespace std;
 // Function to validate if a file exists
 bool isValidFile(const string &filename)
 {
@@ -7,7 +8,9 @@ bool isValidFile(const string &filename)
     return file.good();
 }
 
-// Function to validate CSV format (basic check)
+
+
+
 bool isValidCSV(const string &line)
 {
     int commaCount = count(line.begin(), line.end(), ',');
@@ -111,7 +114,7 @@ void detectFraudulentTransactions()
     cout << "------------------------------------------------------\n";
 }
 
-void parseCSV(const string &filename)
+void parseCSV(const string &filename,vector<vector<pair<vector<int>, vector<int>>>>&vec)
 {
     ifstream file(filename);
     if (!file.is_open())
@@ -155,7 +158,8 @@ void parseCSV(const string &filename)
                 try
                 {
                     int amount = stoi(amountStr);
-                    expenseData[month][day].first[i] += amount;
+                    vec[month][day].first[i] += amount;
+                   
                 }
                 catch (...)
                 {
@@ -172,7 +176,7 @@ void parseCSV(const string &filename)
                 try
                 {
                     int amount = stoi(amountStr);
-                    expenseData[month][day].second[i] += amount;
+                    vec[month][day].second[i] += amount;
                 }
                 catch (...)
                 {
@@ -290,22 +294,81 @@ void addExpense()
 
     // Map to hold expenses for each category
     map<string, double> expenseEntry;
+    map<string,int> cards;
 
     // Take input for each category
     for (const auto &category : essentialCategories)
     {
         double amount;
-        cout << "Enter amount for " << category << ": ";
+        int c_id;
+        cout << "Enter amount" << category << ": ";
         cin >> amount;
+        bool flag=true;
+        while(true){
+        cout<<"choose the cardid you used for the payment"<<endl;
+        cout<<"1-> A"<<endl;
+        cout<<"2-> B"<<endl;
+        cout<<"3-> C"<<endl;
+        cout<<"4-> None"<<endl;
+        cin>>c_id;
+        if(c_id!=1&&c_id!=2&&c_id!=3 && c_id!=4){
+            cout<<"wrong choice try again"<<endl;
+ 
+        }
+        else if(c_id==4){
+            c_id=0;
+            break;
+        }
+        else{
+            break;
+        }
+
+       
+
+    }
+        
+       
+    
+        
+
         expenseEntry[category] = amount;
+        cards[category]=c_id;
     }
 
     for (const auto &category : nonEssentialCategories)
     {
         double amount;
-        cout << "Enter amount for " << category << ": ";
+        int c_id;
+        cout << "Enter amount" << category << ": ";
         cin >> amount;
+        bool flag=true;
+        while(true){
+        cout<<"choose the cardid you used for the payment"<<endl;
+        cout<<"1-> A"<<endl;
+        cout<<"2-> B"<<endl;
+        cout<<"3-> C"<<endl;
+        cout<<"4-> None"<<endl;
+        cin>>c_id;
+        if(c_id!=1&&c_id!=2&&c_id!=3 && c_id!=4){
+            cout<<"wrong choice try again"<<endl;
+ 
+        }
+        else if(c_id==4){
+            c_id=0;
+            break;
+        }
+        else{
+            break;
+        }
+
+       
+
+    }
+        
+        
+
         expenseEntry[category] = amount;
+        cards[category]=c_id;
     }
 
     // Store in expenseData
@@ -313,12 +376,15 @@ void addExpense()
     for (size_t i = 0; i < essentialCategories.size(); ++i)
     {
         expenseData[month][day].first[i] += expenseEntry[essentialCategories[i]]; // Add to respective category
+        cardid[month][day].first[i] = ((cards[essentialCategories[i]]));
+        
     }
 
     // Update non-essential categories (second vector)
     for (size_t i = 0; i < nonEssentialCategories.size(); ++i)
     {
         expenseData[month][day].second[i] += expenseEntry[nonEssentialCategories[i]]; // Add to respective category
+        cardid[month][day].second[i] = ((cards[essentialCategories[i]]));
     }
 
     // Append to CSV file
@@ -343,6 +409,32 @@ void addExpense()
     {
         cout << "Error opening file.\n";
     }
+    file.close();
+
+
+    ofstream file1("carddetails.csv", ios::app); // Append mode
+    if (file1.is_open())
+    {
+        file1 << "\n"
+             << date;
+        // Append expenses for each category
+        for (const auto &category : essentialCategories)
+        {
+            file1 << "," << cards[category];
+        }
+        for (const auto &category : nonEssentialCategories)
+        {
+            file1 << "," << cards[category];
+        }
+        file1.close();
+       
+    }
+    else
+    {
+        cout << "Error opening file.\n";
+    }
+    file1.close();
+
 }
 
 void updateExpense()
@@ -530,19 +622,18 @@ void updateExpense()
 }
 
 // Function to delete expenses for a given date
-void deleteExpenses()
+bool deleteExpenses(string &filename,string & date)
 {
-    string filename = "filename.csv";
-    string date;
+    
+    
     displayExpenses();
-    cout << "Enter the date (YYYY-MM-DD) to delete all expenses of that day: ";
-    cin >> date;
+    
 
     // Validate Date Format
     if (!validateDateFormat(date))
     {
         cout << "Invalid date format! Please enter in YYYY-MM-DD format.\n";
-        return;
+        return false;
     }
 
     // Extract month and day from the date
@@ -552,19 +643,22 @@ void deleteExpenses()
     if (month < 0 || month >= 12 || day < 0 || day >= 31)
     {
         cout << "Invalid date! Month or day out of range.\n";
-        return;
+        return false;
     }
 
     // Clear the expenses for the specified date
     expenseData[month][day].first = {0, 0, 0};  // Clear essential category expenses
     expenseData[month][day].second = {0, 0, 0}; // Clear non-essential category expenses
+    cardid[month][day].first = {0, 0, 0};  // Clear essential category expenses
+    cardid[month][day].second = {0, 0, 0}; // Clear non-essential category expenses
+    
 
     // Open the CSV file for reading
     ifstream inFile(filename);
     if (!inFile.is_open())
     {
         cerr << "Error: Cannot open file " << filename << " for reading.\n";
-        return;
+        return false;
     }
 
     // Create a temporary file to write the updated content
@@ -573,7 +667,7 @@ void deleteExpenses()
     {
         cerr << "Error: Cannot open temporary file for writing.\n";
         inFile.close();
-        return;
+        return false;
     }
 
     string line;
@@ -618,16 +712,17 @@ void deleteExpenses()
     {
         remove(filename.c_str());             // Delete the old file
         rename("temp.csv", filename.c_str()); // Rename the temporary file to the original filename
-        cout << "Expenses for date " << date << " have been deleted successfully.\n";
+        return true;
     }
     else
     {
         remove("temp.csv"); // If no matching date is found, remove the temporary file
-        cout << "No expenses found for the entered date.\n";
+        return false;
+       
     }
 }
 
-
+void menu();
 
 
 void optimizeSavingsPlan(vector<int> &nonEssentialExpenses, int &goal) {
@@ -696,9 +791,229 @@ double optimizeSavings(int &goal) {
     cout << "\n";
 
     optimizeSavingsPlan(nonEssentialExpenses, goal);
+    menu();
     return 0;
 }
 
+
+
+vector<PaymentResult> optimizeCreditCardPayments(
+    const vector<vector<pair<vector<int>, vector<int>>>>& expenseData,
+    const vector<vector<pair<vector<int>, vector<int>>>>& cardid,
+    vector<CreditCard>& cardVec,
+    int availableFunds
+) {
+    vector<int> totalDue(4, 0); // index 1->A, 2->B, 3->C
+
+    for (int month = 0; month < 12; ++month) {
+        for (int day = 0; day < 31; ++day) {
+            auto expenses = expenseData[month][day];
+            auto cards = cardid[month][day];
+
+            for (int i = 0; i < 3; ++i) {
+                int cardIdx = cards.first[i];
+                if (cardIdx >= 1 && cardIdx <= 3) {
+                    totalDue[cardIdx] += expenses.first[i];
+                }
+            }
+            for (int i = 0; i < 3; ++i) {
+                int cardIdx = cards.second[i];
+                if (cardIdx >= 1 && cardIdx <= 3) {
+                    totalDue[cardIdx] += expenses.second[i];
+                }
+            }
+        }
+    }
+
+    // Step 2: Pay minimum dues first
+    vector<int> amountPaid(4, 0);
+    for (int i = 1; i <= 3; ++i) {
+        int minDue = cardVec[i].minDue;
+        int pay = min(minDue, totalDue[i]);
+        if (availableFunds >= pay) {
+            amountPaid[i] += pay;
+            availableFunds -= pay;
+        }
+    }
+
+    // Step 3: Pay remaining dues by highest interest first
+    vector<pair<int, double>> sortedCards;
+    for (int i = 1; i <= 3; ++i) {
+        int unpaid = totalDue[i] - amountPaid[i];
+        if (unpaid > 0) {
+            sortedCards.push_back(make_pair(i, cardVec[i].interestRate));
+        }
+    }
+
+    sort(sortedCards.begin(), sortedCards.end(), [](const pair<int, double>& a, const pair<int, double>& b) {
+        return a.second > b.second;
+    });
+
+    for (size_t i = 0; i < sortedCards.size(); ++i) {
+        int idx = sortedCards[i].first;
+        double rate = sortedCards[i].second;
+
+        int unpaid = totalDue[idx] - amountPaid[idx];
+        int pay = min(unpaid, availableFunds);
+        amountPaid[idx] += pay;
+        availableFunds -= pay;
+        if (availableFunds == 0) break;
+    }
+
+    // Step 4: Prepare results
+    vector<PaymentResult> results;
+    for (int i = 1; i <= 3; ++i) {
+        int unpaid = totalDue[i] - amountPaid[i];
+        double interest = unpaid * cardVec[i].interestRate / 100.0;
+        results.push_back({
+            cardVec[i].name,
+            totalDue[i],
+            amountPaid[i],
+            unpaid,
+            interest
+        });
+    }
+
+    // Sort output by interest
+    sort(results.begin(), results.end(), [&](const PaymentResult& a, const PaymentResult& b) {
+        int ai = a.card[0] - 'A' + 1;
+        int bi = b.card[0] - 'A' + 1;
+        return cardVec[ai].interestRate > cardVec[bi].interestRate;
+    });
+
+    return results;
+}
+
+void displayResults(const vector<PaymentResult>& results) {
+    for (const auto& r : results) {
+        cout << "Card: " << r.card
+             << " | Total Due: " << r.totalDue
+             << " | Paid: " << r.amountPaid
+             << " | Unpaid: " << r.unpaidAmount
+             << " | Interest Incurred: " << r.interest << endl;
+    }
+}
+
+
+int findMinTravelCost(
+    const vector<City>& cities,
+    const vector<vector<ERoute>>& graph,
+    int source,
+    int destination,
+    int numPeople,
+    int numDays,
+    vector<int>& parent
+) {
+    int n = cities.size();
+    vector<int> minCost(n, numeric_limits<int>::max());
+    priority_queue<CNode, vector<CNode>, greater<CNode>> pq;
+    parent.assign(n, -1);
+
+    // Initial cost is hotel at source
+    minCost[source] = cities[source].hotelCostPerNight * numDays * numPeople;
+    pq.push({source, minCost[source]});
+
+    while (!pq.empty()) {
+        CNode current = pq.top();
+        pq.pop();
+
+        for (const ERoute& edge : graph[current.city]) {
+            int newCost = current.cost +
+                edge.flightCost * numPeople + // flight for all
+                cities[edge.destination].hotelCostPerNight * numDays * numPeople;
+
+            if (newCost < minCost[edge.destination]) {
+                minCost[edge.destination] = newCost;
+                parent[edge.destination] = current.city;
+                pq.push({edge.destination, newCost});
+            }
+        }
+    }
+
+    return minCost[destination];
+}
+
+void printPath(const vector<int>& parent, int source, int destination, const vector<City>& cities) {
+    vector<string> path;
+    int current = destination;
+
+    while (current != -1) {
+        path.push_back(cities[current].name);
+        if (current == source) break;
+        current = parent[current];
+    }
+
+    if (path.back() != cities[source].name) {
+        cout << "No path exists from " << cities[source].name << " to " << cities[destination].name << ".\n";
+        return;
+    }
+
+    reverse(path.begin(), path.end());
+
+    cout << "Cheapest path: ";
+    for (size_t i = 0; i < path.size(); ++i) {
+        cout << path[i];
+        if (i != path.size() - 1) cout << " -> ";
+    }
+    cout << endl;
+}
+
+void travelExpenseMinimizer() {
+    int numCities, numFlights;
+    cout << "Enter number of cities: ";
+    cin >> numCities;
+
+    vector<City> cities(numCities);
+    unordered_map<string, int> cityIndex;
+    string cityName;
+    int hotelCost;
+
+    cout << "Enter city names and hotel costs per night:\n";
+    for (int i = 0; i < numCities; ++i) {
+        cout << "City " << i + 1 << " name: ";
+        cin >> cityName;
+        cout << "Hotel cost per night in " << cityName << ": ";
+        cin >> hotelCost;
+        cities[i] = {cityName, hotelCost};
+        cityIndex[cityName] = i;
+    }
+
+    vector<vector<ERoute>> graph(numCities);
+    cout << "Enter number of flight routes: ";
+    cin >> numFlights;
+
+    for (int i = 0; i < numFlights; ++i) {
+        string from, to;
+        int cost;
+        cout << "From city: ";
+        cin >> from;
+        cout << "To city: ";
+        cin >> to;
+        cout << "Flight cost from " << from << " to " << to << ": ";
+        cin >> cost;
+
+        graph[cityIndex[from]].push_back({cityIndex[to], cost});
+    }
+
+    string src, dest;
+    int people, days;
+    cout << "Enter starting city: ";
+    cin >> src;
+    cout << "Enter destination city: ";
+    cin >> dest;
+    cout << "Enter number of travelers: ";
+    cin >> people;
+    cout << "Enter number of days to stay in each city: ";
+    cin >> days;
+
+    vector<int> parent;
+    int totalCost = findMinTravelCost(cities, graph, cityIndex[src], cityIndex[dest], people, days, parent);
+
+    cout << "\nMinimum total cost from " << src << " to " << dest << " for "
+         << people << " people over " << days << " days is: Rs " << totalCost << endl;
+
+    printPath(parent, cityIndex[src], cityIndex[dest], cities);
+}
 
 void menu() {
     int choice;
@@ -712,9 +1027,19 @@ void menu() {
         cout << "\n6. Compress Data";
         cout << "\n7. Decompress Data";
         cout << "\n8. Optimize Savings";
+        cout << "\n9. Credit Card Payment Strategy";
+        cout << "\n10. Best Flight optimization";
         cout << "\n11. Exit";
         cout << "\nEnter your choice: ";
         cin >> choice;
+        string filename1 = "filename.csv";
+        string filename2 ="carddetails.csv";
+        string date;
+        vector<CreditCard> cardVec(4);
+        cardVec[1] = {"A", 3.5, 500, 15};
+        cardVec[2] = {"B", 2.0, 300, 12};
+        cardVec[3] = {"C", 1.5, 200, 18};
+        vector<PaymentResult> payVec;
 
         switch (choice) {
         case 1:
@@ -727,7 +1052,18 @@ void menu() {
             updateExpense();
             break;
         case 4:
-            deleteExpenses();
+            cout << "Enter the date (YYYY-MM-DD) to delete all expenses of that day: ";
+            cin >> date;
+       
+            if(deleteExpenses(filename1,date) || deleteExpenses(filename2,date)){
+                cout << "Expenses for date " << date << " have been deleted successfully.\n";
+                
+            }
+            else{
+                cout << "No expenses found for the entered date.\n";
+              
+            }
+           
             break;
         // case 5:
         // allocateEmergencyFunds();
@@ -749,6 +1085,19 @@ void menu() {
             optimizeSavings(goal);
             
             break;
+        case 9:
+           
+            cout<<"Enter your available funds"<<endl;
+            int funds;
+            cin>>funds;
+            payVec= optimizeCreditCardPayments(expenseData,cardid,cardVec,funds);
+            displayResults(payVec);
+
+            break;
+        case 10:
+            travelExpenseMinimizer();  // Call our feature here
+            break;
+            
         case 11:
             cout << "Exiting program...\n";
             break;
@@ -761,15 +1110,23 @@ void menu() {
 
 // Main function
 int main()
-{
-    string filename = "filename.csv";
-    if (!isValidFile(filename))
+
+{   
+    string filename1 = "filename.csv";
+    string filename2 ="carddetails.csv";
+    if (!isValidFile(filename1))
+    {
+        cerr << "Error: File not found or inaccessible." << endl;
+        return 1;
+    }
+    if (!isValidFile(filename2))
     {
         cerr << "Error: File not found or inaccessible." << endl;
         return 1;
     }
     // Load existing expenses from CSV file
-    parseCSV(filename);
+    parseCSV(filename1,expenseData);
+    parseCSV(filename2,cardid);
     menu();
     return 0;
 }

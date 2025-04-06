@@ -20,8 +20,47 @@
 #include <stdexcept>
 
 using namespace std;
+struct City {
+    string name;
+    int hotelCostPerNight;
+};
 
+struct ERoute {
+    int destination;
+    int flightCost;
+};
+
+struct CNode {
+    int city;
+    int cost;
+    bool operator>(const CNode& other) const {
+        return cost > other.cost;
+    }
+};
 // Struct to store expense data
+class TravelOption {
+    public:
+    string airline;
+    int flightCostPerPerson;
+    string hotel;
+    int hotelCostPerDay;
+};
+class CreditCard {
+    public:
+        string name;
+        double interestRate; // percentage per billing cycle
+        int minDue;          // minimum amount to be paid
+        int dueDate;         // day of the month payment is due
+    };
+
+class PaymentResult {
+public:
+    string card;
+    int totalDue;
+    int amountPaid;
+    int unpaidAmount;
+    double interest;
+};
 class Expense {
     public:
         string category;
