@@ -89,39 +89,17 @@ bool validateDateFormat(const string &date);
 void detectFraudulentTransactions();
 
 
+#define MAX_NODES 372     // 12 months × 31 days
+#define MAX_EDGES 400     // approximate maximum number of edges
+
 struct Edge {
-    int src, dest;
+    int src;
+    int dest;
     double weight;
 };
 
-class DisjointSet {
-public:
-    unordered_map<int, int> parent, rank;
-    void makeSet(int n) {
-        for (int i = 0; i < n; i++) {
-            parent[i] = i;
-            rank[i] = 0;
-        }
-    }
-    int find(int x) {
-        if (parent[x] != x) parent[x] = find(parent[x]);
-        return parent[x];
-    }
-    void unite(int x, int y) {
-        int rootX = find(x);
-        int rootY = find(y);
-        if (rootX != rootY) {
-            if (rank[rootX] > rank[rootY]) {
-                parent[rootY] = rootX;
-            } else if (rank[rootX] < rank[rootY]) {
-                parent[rootX] = rootY;
-            } else {
-                parent[rootY] = rootX;
-                rank[rootX]++;
-            }
-        }
-    }
-};
+int parent[MAX_NODES];
+int rankArr[MAX_NODES];
 
 struct HuffmanNode {
     char data;
@@ -139,5 +117,4 @@ struct Compare {
 
 
 #endif
-
 

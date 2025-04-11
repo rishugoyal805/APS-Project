@@ -1015,6 +1015,200 @@ void travelExpenseMinimizer() {
     printPath(parent, cityIndex[src], cityIndex[dest], cities);
 }
 
+void initializeDisjointSet(int n) {
+    for (int i = 0; i < n; ++i) {
+        parent[i] = i;
+        rankArr[i] = 0;
+    }
+}
+
+int findParent(int x) {
+    if (parent[x] != x)
+        parent[x] = findParent(parent[x]);
+    return parent[x];
+}
+
+void unionSets(int x, int y) {
+    int rootX = findParent(x);
+    int rootY = findParent(y);
+    if (rootX != rootY) {
+        if (rankArr[rootX] > rankArr[rootY]) {
+            parent[rootY] = rootX;
+        } else if (rankArr[rootX] < rankArr[rootY]) {
+            parent[rootX] = rootY;
+        } else {
+            parent[rootY] = rootX;
+            rankArr[rootX]++;
+        }
+    }
+}
+// Bubble sort for edges by weight
+void sortEdges(Edge edges[], int edgeCount) {
+    for (int i = 0; i < edgeCount - 1; ++i) {
+        for (int j = 0; j < edgeCount - i - 1; ++j) {
+            if (edges[j].weight > edges[j + 1].weight) {
+                Edge temp = edges[j];
+                edges[j] = edges[j + 1];
+                edges[j + 1] = temp;
+            }
+        }
+    }
+}
+
+void allocateEmergencyFunds() {
+    Edge edges[MAX_EDGES];
+    int edgeCount = 0;
+    int nodeId = 0;
+
+    for (int month = 0; month < 12; ++month) {
+        for (int day = 0; day < 31; ++day) {
+            int currentNode = nodeId++;
+            int nextNode = currentNode + 1;
+            if (nextNode >= MAX_NODES) continue;
+
+            int nextMonth = nextNode / 31;
+            int nextDay = nextNode % 31;
+
+            if (nextMonth >= 12 || nextDay >= 31) continue;
+
+            double total1 = 0, total2 = 0;
+            for (int i = 0; i < 3; ++i) {
+                total1 += expenseData[month][day].first[i] + expenseData[month][day].second[i];
+                total2 += expenseData[nextMonth][nextDay].first[i] + expenseData[nextMonth][nextDay].second[i];
+            }
+
+            double diff = (total1 > total2) ? (total1 - total2) : (total2 - total1);
+            edges[edgeCount].src = currentNode;
+            edges[edgeCount].dest = nextNode;
+            edges[edgeCount].weight = diff;
+            edgeCount++;
+        }
+    }
+
+    sortEdges(edges, edgeCount);
+    initializeDisjointSet(MAX_NODES);
+
+    double totalCost = 0;
+    cout << "\nEmergency Fund Transfer:\n";
+    for (int i = 0; i < edgeCount; ++i) {
+        int u = edges[i].src;
+        int v = edges[i].dest;
+        if (findParent(u) != findParent(v)) {
+            unionSets(u, v);
+            totalCost += edges[i].weight;
+            cout << "Transfer from " << u << " to " << v << " with cost " << edges[i].weight << "\n";
+        }
+    }
+
+    cout << "Total Minimum Transfer Cost: " << totalCost << "\n";
+}
+
+void buildHuffmanTree(const string &data, unordered_map<char, string> &huffmanCode) {
+    unordered_map<char, int> freq;
+    for (char ch : data) freq[ch]++;
+    priority_queue<HuffmanNode*, vector<HuffmanNode*>, Compare> pq;
+    for (auto &pair : freq) pq.push(new HuffmanNode(pair.first, pair.second));
+    while (pq.size() > 1) {
+        HuffmanNode *left = pq.top(); pq.pop();
+        HuffmanNode *right = pq.top(); pq.pop();
+        HuffmanNode *node = new HuffmanNode('\0', left->freq + right->freq);
+        node->left = left; node->right = right;
+        pq.push(node);
+    }
+    function<void(HuffmanNode*, string)> encode = [&](HuffmanNode* node, string str) {
+        if (!node) return;
+        if (node->data != '\0') huffmanCode[node->data] = str;
+        encode(node->left, str + "0");
+        encode(node->right, str + "1");
+    };
+    encode(pq.top(), "");
+}
+
+string compressData(const string &data, unordered_map<char, string> &huffmanCode) {
+    string compressed = "";
+    for (char ch : data) compressed += huffmanCode[ch];
+    return compressed;
+}
+
+string decompressData(const string &compressed, unordered_map<char, string> &huffmanCode) {
+    unordered_map<string, char> reverseCode;
+    for (auto &pair : huffmanCode) reverseCode[pair.second] = pair.first;
+    string temp = "", decompressed = "";
+    for (char bit : compressed) {
+        temp += bit;
+        if (reverseCode.count(temp)) {
+            decompressed += reverseCode[temp];
+            temp = "";
+        }
+    }
+    return decompressed;
+}
+
+void updateExpenseData() {
+    ifstream file(filename);
+    stringstream buffer;
+    buffer << file.rdbuf();
+    string data = buffer.str();
+    file.close();
+    unordered_map<char, string> huffmanCode;
+    buildHuffmanTree(data, huffmanCode);
+    string compressed = compressData(data, huffmanCode);
+    ofstream outFile(filename, ios::trunc);
+    outFile << compressed;
+    outFile.close();
+    cout << "Data compressed and updated successfully!\n";
+}
+
+void restoreExpenseData() {
+    ifstream file(filename);
+    stringstream buffer;
+    buffer << file.rdbuf();
+    string data = buffer.str();
+    file.close();
+    unordered_map<char, string> huffmanCode;
+    buildHuffmanTree(data, huffmanCode);
+    string decompressed = decompressData(data, huffmanCode);
+    ofstream outFile(filename, ios::trunc);
+    outFile << decompressed;
+    outFile.close();
+    cout << "Data decompressed and restored successfully!\n";
+}
+
+void displayGraph(const vector<Edge>& edges) {
+    cout << "Graph Representation:\n";
+    for (const auto& edge : edges) {
+        cout << "Account " << edge.src << " -(" << edge.weight << ")-> Account " << edge.dest << "\n";
+    }
+}
+
+void loadExpenseData(map<string, double>& expenses) {
+    ifstream file(filename);
+    if (!file) {
+        cout << "No previous expense data found." << endl;
+        return;
+    }
+    string category;
+    double amount;
+    while (file >> category >> amount) {
+        expenses[category] += amount;
+    }
+    file.close();
+}
+
+void saveExpenseData(const map<string, double>& expenses) {
+    ofstream file(filename);
+    for (const auto& entry : expenses) {
+        file << entry.first << " " << entry.second << endl;
+    }
+    file.close();
+}
+
+void listAllExpenses(const map<string, double>& expenses) {
+    cout << "All Expenses:\n";
+    for (const auto& entry : expenses) {
+        cout << entry.first << ": " << entry.second << "\n";
+    }
+}
 void menu() {
     int choice;
     do {
@@ -1065,16 +1259,15 @@ void menu() {
             }
            
             break;
-        // case 5:
-        // allocateEmergencyFunds();
-        //     cout << "Allocating emergency funds...\n";
-        //     break;
-        // case 6:
-        //     updateExpenseData();
-        //     break;
-        // case 7:
-        //     restoreExpenseData();
-        //     break;
+        case 5:
+            allocateEmergencyFunds();
+            break;
+        case 6:
+            updateExpenseData();
+            break;
+        case 7:
+            restoreExpenseData();
+            break;
         case 8:
 
             int goal;
