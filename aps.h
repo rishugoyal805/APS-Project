@@ -18,6 +18,10 @@
 #include <vector>
 #include <queue>
 #include <stdexcept>
+#include <windows.h> // For Sleep function
+#include <thread> // For sleep_for function
+#include <chrono> // For sleep_for function
+
 
 using namespace std;
 struct City {
