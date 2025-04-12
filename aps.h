@@ -18,10 +18,6 @@
 #include <vector>
 #include <queue>
 #include <stdexcept>
-#include <windows.h> // For Sleep function
-#include <thread> // For sleep_for function
-#include <chrono> // For sleep_for function
-
 
 using namespace std;
 struct City {
@@ -118,7 +114,12 @@ struct Compare {
     }
 };
 
+// Caesar Cipher encryption and decryption
+void encrypt(const string& inputFilename, const string& outputFilename, int key);
+void decrypt(const string& inputFilename, const string& outputFilename, int key);
 
 
 #endif
+
+
 
