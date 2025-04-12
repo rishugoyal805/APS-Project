@@ -1318,6 +1318,54 @@ void listAllExpenses(const map<string, double> &expenses)
         cout << entry.first << ": " << entry.second << "\n";
     }
 }
+void encrypt(const string& inputFilename, const string& outputFilename, int key) {
+    ifstream input(inputFilename);
+    ofstream output(outputFilename);
+    if (!input.is_open() || !output.is_open()) {
+        cerr << "Error opening files.\n";
+        return;
+    }
+
+    char ch;
+    while (input.get(ch)) {
+        if (isalpha(ch)) {
+            char base = islower(ch) ? 'a' : 'A';
+            ch = (ch - base + key) % 26 + base;
+        } else if (isdigit(ch)) {
+            ch = (ch - '0' + key) % 10 + '0';
+        }
+        output.put(ch);
+    }
+
+    input.close();
+    output.close();
+    cout << "Encrypted " << inputFilename << "into " << outputFilename << endl;
+}
+
+void decrypt(const string& inputFilename, const string& outputFilename, int key) {
+    ifstream input(inputFilename);
+    ofstream output(outputFilename);
+    if (!input.is_open() || !output.is_open()) {
+        cerr << "Error opening files.\n";
+        return;
+    }
+
+    char ch;
+    while (input.get(ch)) {
+        if (isalpha(ch)) {
+            char base = islower(ch) ? 'a' : 'A';
+            ch = (ch - base - key + 26) % 26 + base;
+        } else if (isdigit(ch)) {
+            ch = (ch - '0' - key + 10) % 10 + '0';
+        }
+        output.put(ch);
+    }
+
+    input.close();
+    output.close();
+    cout << "Decrypted " << inputFilename << "into " << outputFilename << endl;
+}
+
 void menu()
 {
     int choice;
@@ -1334,7 +1382,9 @@ void menu()
         cout << "\n8. Optimize Savings";
         cout << "\n9. Credit Card Payment Strategy";
         cout << "\n10. Best Flight optimization";
-        cout << "\n11. Exit";
+        cout << "\n11. Encrypt CSV";
+        cout << "\n12. Decrypt CSV";
+        cout << "\n113. Exit";
         cout << "\nEnter your choice: ";
         cin >> choice;
         string filename1 = "filename.csv";
@@ -1402,15 +1452,31 @@ void menu()
         case 10:
             travelExpenseMinimizer(); // Call our feature here
             break;
-
-        case 11:
+        case 11: {
+                int key;
+                cout << "Enter encryption key (positive integer): ";
+                cin >> key;
+                encrypt("filename.csv", "caesar_encrypted_filename.csv", key);
+                encrypt("carddetails.csv", "caesar_encrypted_carddetails.csv", key);
+                break;
+            }
+        case 12: {
+                int key;
+                cout << "Enter decryption key (must match encryption key): ";
+                cin >> key;
+                decrypt("caesar_encrypted_filename.csv", "caesar_decrypted_filename.csv", key);
+                decrypt("caesar_encrypted_carddetails.csv", "caesar_decrypted_carddetails.csv", key);
+                break;
+            }
+            
+        case 13:
             cout << "Exiting program...\n";
             break;
 
         default:
             cout << "Invalid choice! Please enter a valid option.\n";
         }
-    } while (choice != 11);
+    } while (choice != 13);
 }
 
 // Main function
