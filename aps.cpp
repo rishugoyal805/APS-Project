@@ -1493,20 +1493,26 @@ void generateBudgetPlan(double monthlyIncome)
     cout << "\n TOTAL: " << monthlyIncome << " distributed across needs, wants, savings, and others.\n"
          << endl;
 }
-void encrypt(const string& inputFilename, const string& outputFilename, int key) {
+void encrypt(const string &inputFilename, const string &outputFilename, int key)
+{
     ifstream input(inputFilename);
     ofstream output(outputFilename);
-    if (!input.is_open() || !output.is_open()) {
+    if (!input.is_open() || !output.is_open())
+    {
         cerr << "Error opening files.\n";
         return;
     }
 
     char ch;
-    while (input.get(ch)) {
-        if (isalpha(ch)) {
+    while (input.get(ch))
+    {
+        if (isalpha(ch))
+        {
             char base = islower(ch) ? 'a' : 'A';
             ch = (ch - base + key) % 26 + base;
-        } else if (isdigit(ch)) {
+        }
+        else if (isdigit(ch))
+        {
             ch = (ch - '0' + key) % 10 + '0';
         }
         output.put(ch);
@@ -1517,20 +1523,26 @@ void encrypt(const string& inputFilename, const string& outputFilename, int key)
     cout << "Encrypted " << inputFilename << "into " << outputFilename << endl;
 }
 
-void decrypt(const string& inputFilename, const string& outputFilename, int key) {
+void decrypt(const string &inputFilename, const string &outputFilename, int key)
+{
     ifstream input(inputFilename);
     ofstream output(outputFilename);
-    if (!input.is_open() || !output.is_open()) {
+    if (!input.is_open() || !output.is_open())
+    {
         cerr << "Error opening files.\n";
         return;
     }
 
     char ch;
-    while (input.get(ch)) {
-        if (isalpha(ch)) {
+    while (input.get(ch))
+    {
+        if (isalpha(ch))
+        {
             char base = islower(ch) ? 'a' : 'A';
             ch = (ch - base - key + 26) % 26 + base;
-        } else if (isdigit(ch)) {
+        }
+        else if (isdigit(ch))
+        {
             ch = (ch - '0' - key + 10) % 10 + '0';
         }
         output.put(ch);
@@ -1672,7 +1684,24 @@ void menu()
             cin >> riskBudget;
             optimizeInvestmentPortfolio(riskBudget);
             break;
-
+        case 14:
+        {
+            int key;
+            cout << "Enter encryption key (positive integer): ";
+            cin >> key;
+            encrypt("filename.csv", "caesar_encrypted_filename.csv", key);
+            encrypt("carddetails.csv", "caesar_encrypted_carddetails.csv", key);
+            break;
+        }
+        case 15:
+        {
+            int key;
+            cout << "Enter decryption key (must match encryption key): ";
+            cin >> key;
+            decrypt("caesar_encrypted_filename.csv", "caesar_decrypted_filename.csv", key);
+            decrypt("caesar_encrypted_carddetails.csv", "caesar_decrypted_carddetails.csv", key);
+            break;
+        }
         case 16:
             cout << "Exiting program...\n";
             break;
