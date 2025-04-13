@@ -10,8 +10,8 @@
 #include <string>
 #include <algorithm>
 #include <iomanip> // Include for formatting
-#include <regex>  // For date validation
-#include <set>  // For unique categories
+#include <regex>   // For date validation
+#include <set>     // For unique categories
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
@@ -19,45 +19,51 @@
 #include <queue>
 #include <stdexcept>
 #include <windows.h> // For Sleep function
-#include <thread> // For sleep_for function
-#include <chrono> // For sleep_for function
-
+#include <thread>    // For sleep_for function
+#include <chrono>    // For sleep_for function
 
 using namespace std;
-struct City {
+struct City
+{
     string name;
     int hotelCostPerNight;
 };
 
-struct ERoute {
+struct ERoute
+{
     int destination;
     int flightCost;
 };
 
-struct CNode {
+struct CNode
+{
     int city;
     int cost;
-    bool operator>(const CNode& other) const {
+    bool operator>(const CNode &other) const
+    {
         return cost > other.cost;
     }
 };
 // Struct to store expense data
-class TravelOption {
-    public:
+class TravelOption
+{
+public:
     string airline;
     int flightCostPerPerson;
     string hotel;
     int hotelCostPerDay;
 };
-class CreditCard {
-    public:
-        string name;
-        double interestRate; // percentage per billing cycle
-        int minDue;          // minimum amount to be paid
-        int dueDate;         // day of the month payment is due
-    };
+class CreditCard
+{
+public:
+    string name;
+    double interestRate; // percentage per billing cycle
+    int minDue;          // minimum amount to be paid
+    int dueDate;         // day of the month payment is due
+};
 
-class PaymentResult {
+class PaymentResult
+{
 public:
     string card;
     int totalDue;
@@ -65,10 +71,11 @@ public:
     int unpaidAmount;
     double interest;
 };
-class Expense {
-    public:
-        string category;
-        double amount;
+class Expense
+{
+public:
+    string category;
+    double amount;
 };
 
 vector<vector<pair<vector<int>, vector<int>>>> expenseData(12, vector<pair<vector<int>, vector<int>>>(31, {{0, 0, 0}, {0, 0, 0}}));
@@ -92,11 +99,11 @@ bool validateDateFormat(const string &date);
 // Function of algorithm
 void detectFraudulentTransactions();
 
+#define MAX_NODES 372 // 12 months × 31 days
+#define MAX_EDGES 400 // approximate maximum number of edges
 
-#define MAX_NODES 372     // 12 months × 31 days
-#define MAX_EDGES 400     // approximate maximum number of edges
-
-struct Edge {
+struct Edge
+{
     int src;
     int dest;
     double weight;
@@ -105,20 +112,70 @@ struct Edge {
 int parent[MAX_NODES];
 int rankArr[MAX_NODES];
 
-struct HuffmanNode {
+struct HuffmanNode
+{
     char data;
     int freq;
     HuffmanNode *left, *right;
     HuffmanNode(char d, int f) : data(d), freq(f), left(nullptr), right(nullptr) {}
 };
 
-struct Compare {
-    bool operator()(HuffmanNode* l, HuffmanNode* r) {
+struct Compare
+{
+    bool operator()(HuffmanNode *l, HuffmanNode *r)
+    {
         return l->freq > r->freq;
     }
 };
 
+// swayam did this
+class Loan
+{
+public:
+    int id;
+    double amount;
+    double interestRate;
 
+    Loan(int id, double amount, double interestRate)
+        : id(id), amount(amount), interestRate(interestRate) {}
+};
+
+class LoanRepaymentResult
+{
+public:
+    int id;
+    double originalAmount;
+    double amountPaid;
+    double unpaidAmount;
+    double interestIncurred;
+};
+// swayam did this
+class Investment
+{
+public:
+    int id;
+    double riskPerUnit;
+    double returnPerUnit;
+    int maxUnits;
+
+    Investment(int id, double risk, double ret, int maxUnits)
+        : id(id), riskPerUnit(risk), returnPerUnit(ret), maxUnits(maxUnits) {}
+};
+
+class InvestmentSelection
+{
+public:
+    int id;
+    int unitsSelected;
+    int totalReturn;
+};
+void generateBudgetPlan(double monthlyIncome);
+void optimizeInvestmentPortfolio(int totalRiskBudget);
+void displayLoanResults(const vector<LoanRepaymentResult> &results);
+vector<LoanRepaymentResult> optimizeLoanRepayment(
+    const vector<vector<pair<vector<int>, vector<int>>>> &expenseData,
+    int income,
+    int month,
+    vector<Loan> &loans);
 
 #endif
-

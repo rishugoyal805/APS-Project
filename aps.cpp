@@ -649,7 +649,6 @@ void updateExpense()
         cout << "Expense not found in the data structure!" << endl;
     }
     displayExpenses();
-
 }
 
 // Function to delete expenses for a given date
@@ -745,9 +744,7 @@ bool deleteExpenses(string &filename, string &date)
         return false;
     }
 }
-
 void menu();
-
 void optimizeSavingsPlan(vector<int> &nonEssentialExpenses, int &goal)
 {
     int n = nonEssentialExpenses.size();
@@ -1246,31 +1243,55 @@ void updateExpenseData()
     ifstream file(filename);
     stringstream buffer;
     buffer << file.rdbuf();
-    string data = buffer.str();
+    string data = buffer.str(); // full CSV contents
     file.close();
+
     unordered_map<char, string> huffmanCode;
     buildHuffmanTree(data, huffmanCode);
     string compressed = compressData(data, huffmanCode);
+
     ofstream outFile(filename, ios::trunc);
+
+    // Write map size
+    outFile << huffmanCode.size() << '\n';
+    for (const auto &pair : huffmanCode)
+    {
+        outFile << (int)(unsigned char)pair.first << ' ' << pair.second << '\n';
+    }
+
+    // Write compressed string
     outFile << compressed;
     outFile.close();
-    cout << "Data compressed and updated successfully!\n";
+
+    cout << "CSV data compressed and updated!\n";
 }
 
 void restoreExpenseData()
 {
     ifstream file(filename);
-    stringstream buffer;
-    buffer << file.rdbuf();
-    string data = buffer.str();
-    file.close();
+    int mapSize;
+    file >> mapSize;
+
     unordered_map<char, string> huffmanCode;
-    buildHuffmanTree(data, huffmanCode);
-    string decompressed = decompressData(data, huffmanCode);
+    for (int i = 0; i < mapSize; ++i)
+    {
+        int chInt;
+        string code;
+        file >> chInt >> code;
+        huffmanCode[(char)chInt] = code;
+    }
+
+    file >> ws; // Eat any whitespaces or newlines
+    string compressed;
+    getline(file, compressed, '\0'); // Read till end
+    file.close();
+
+    string decompressed = decompressData(compressed, huffmanCode);
     ofstream outFile(filename, ios::trunc);
     outFile << decompressed;
     outFile.close();
-    cout << "Data decompressed and restored successfully!\n";
+
+    cout << "CSV data decompressed and restored!\n";
 }
 
 void displayGraph(const vector<Edge> &edges)
@@ -1317,6 +1338,161 @@ void listAllExpenses(const map<string, double> &expenses)
         cout << entry.first << ": " << entry.second << "\n";
     }
 }
+vector<LoanRepaymentResult> optimizeLoanRepayment(
+    const vector<vector<pair<vector<int>, vector<int>>>> &expenseData,
+    int income,
+    int month,
+    vector<Loan> &loans)
+{
+    // Calculate total spending from expense data
+    int totalSpent = 0;
+    for (int day = 0; day < 31; ++day)
+    {
+        auto [ess, nonEss] = expenseData[month][day];
+        for (int x : ess)
+            totalSpent += x;
+        for (int x : nonEss)
+            totalSpent += x;
+    }
+
+    cout << "\n Total Spent: Rs." << totalSpent << endl;
+    cout << " Total Income: Rs." << income << endl;
+
+    int availableFunds = max(0, income - totalSpent);
+    cout << " Available for Loan Repayment: Rs." << availableFunds << endl
+         << endl;
+
+    // Sort loans by interest density (high interest per unit amount first)
+    vector<pair<int, double>> loanPriority; // {index, interest density}
+    for (int i = 0; i < loans.size(); ++i)
+    {
+        double density = loans[i].interestRate / loans[i].amount;
+        loanPriority.push_back({i, density});
+    }
+
+    sort(loanPriority.begin(), loanPriority.end(), [](auto &a, auto &b)
+         { return a.second > b.second; });
+
+    vector<LoanRepaymentResult> results(loans.size());
+
+    // Initialize all loans with 0 paid
+    for (int i = 0; i < loans.size(); ++i)
+    {
+        results[i] = {
+            loans[i].id,
+            loans[i].amount,
+            0.0,
+            loans[i].amount,
+            loans[i].amount * loans[i].interestRate / 100.0};
+    }
+
+    // Distribute available funds
+    for (auto &[idx, _] : loanPriority)
+    {
+        if (availableFunds <= 0)
+            break;
+
+        double pay = min(loans[idx].amount, (double)availableFunds);
+        results[idx].amountPaid = pay;
+        results[idx].unpaidAmount = loans[idx].amount - pay;
+        results[idx].interestIncurred = results[idx].unpaidAmount * loans[idx].interestRate / 100.0;
+
+        availableFunds -= pay;
+    }
+
+    return results;
+}
+
+void displayLoanResults(const vector<LoanRepaymentResult> &results)
+{
+    cout << "\nLoan Repayment Summary:\n\n";
+    for (const auto &r : results)
+    {
+        cout << "Loan ID: " << r.id
+             << " | Original: Rs." << fixed << setprecision(2) << r.originalAmount
+             << " | Paid: Rs." << r.amountPaid
+             << " | Unpaid: Rs." << r.unpaidAmount
+             << " | Interest: Rs." << r.interestIncurred << endl;
+    }
+}
+
+void optimizeInvestmentPortfolio(int totalRiskBudget)
+{
+    // Predefined investments
+    vector<Investment> investments = {
+        {101, 2000, 5000, 20},
+        {102, 100, 500, 10},
+        {203, 10000, 50000, 50},
+        {104, 100, 500, 10},
+        {105, 6000, 10000, 50}};
+
+    // Sort by return-to-risk ratio
+    sort(investments.begin(), investments.end(), [](const Investment &a, const Investment &b)
+         { return (a.returnPerUnit / a.riskPerUnit) > (b.returnPerUnit / b.riskPerUnit); });
+
+    double totalReturn = 0;
+    vector<pair<int, int>> selected; // {id, unitsTaken}
+
+    for (const auto &inv : investments)
+    {
+        int maxUnitsWeCanTake = min(inv.maxUnits, totalRiskBudget / (int)inv.riskPerUnit);
+
+        if (maxUnitsWeCanTake >= 1)
+        {
+            int usedRisk = maxUnitsWeCanTake * inv.riskPerUnit;
+            totalRiskBudget -= usedRisk;
+            totalReturn += maxUnitsWeCanTake * inv.returnPerUnit;
+
+            selected.push_back({inv.id, maxUnitsWeCanTake});
+        }
+
+        if (totalRiskBudget <= 0)
+            break;
+    }
+
+    cout << "\nInvestment Portfolio Optimization:\n"
+         << endl;
+    for (auto &[id, units] : selected)
+    {
+        cout << "Investment ID: " << id
+             << " | Units Selected: " << units
+             << " | Return: Rs." << fixed << setprecision(2) << units * investments[id % 100 - 1].returnPerUnit << endl;
+    }
+
+    cout << "\nTotal Expected Return: Rs." << fixed << setprecision(2) << totalReturn << endl;
+}
+void generateBudgetPlan(double monthlyIncome)
+{
+    cout << fixed << setprecision(2);
+    cout << "\n Monthly Budget for Income: " << monthlyIncome << "\n"
+         << endl;
+
+    // NEEDS (50%)
+    cout << " NEEDS (50%) - " << 0.50 * monthlyIncome << endl;
+    cout << "   Rent (30%): " << 0.30 * monthlyIncome << endl;
+    cout << "   Groceries (10%): " << 0.10 * monthlyIncome << endl;
+    cout << "   Utilities (5%): " << 0.05 * monthlyIncome << endl;
+    cout << "   Transportation (5%): " << 0.05 * monthlyIncome << endl;
+
+    // WANTS (15%)
+    cout << "\n WANTS (15%) - " << 0.15 * monthlyIncome << endl;
+    cout << "   Shopping + EMIs (10%): " << 0.10 * monthlyIncome << endl;
+    cout << "   Entertainment + Travel (5%): " << 0.05 * monthlyIncome << endl;
+
+    // SAVINGS + INVESTMENTS (20%)
+    cout << "\n SAVINGS + INVESTMENTS (20%) - " << 0.20 * monthlyIncome << endl;
+    cout << "   Health + Term Insurance (5%): " << 0.05 * monthlyIncome << endl;
+    cout << "   SIP (in Mutual Funds) (10%): " << 0.10 * monthlyIncome << endl;
+    cout << "   Emergency Fund (5%): " << 0.05 * monthlyIncome << endl;
+
+    // OTHERS (15%)
+    cout << "\n OTHERS (15%) - " << 0.15 * monthlyIncome << endl;
+    cout << "   Upskilling (5%): " << 0.05 * monthlyIncome << endl;
+    cout << "   Family Support (10%): " << 0.10 * monthlyIncome << endl;
+
+    cout << "\n TOTAL: " << monthlyIncome << " distributed across needs, wants, savings, and others.\n"
+         << endl;
+}
 void menu()
 {
     int choice;
@@ -1327,16 +1503,19 @@ void menu()
         cout << "\n2. Add Expense";
         cout << "\n3. Update Expense";
         cout << "\n4. Delete Expense";
-        cout << "\n5. Allocate Emergency Funds";
-        cout << "\n6. Compress Data";
-        cout << "\n7. Decompress Data";
-        cout << "\n8. Optimize Savings";
-        cout << "\n9. Credit Card Payment Strategy";
-        cout << "\n10. Best Flight optimization";
-        cout << "\n11. Exit";
+        cout << "\n5. Design A budget plan";
+        cout << "\n6. Allocate Emergency Funds";
+        cout << "\n7. Compress Data";
+        cout << "\n8. Decompress Data";
+        cout << "\n9. Optimize Savings";
+        cout << "\n10. Credit Card Payment Strategy";
+        cout << "\n11. Best Flight optimization";
+        cout << "\n12. Loan Repayment Strategy";
+        cout << "\n13. Investment Portfolio Optimization";
+        cout << "\n14. Exit";
         cout << "\nEnter your choice: ";
         cin >> choice;
-        string filename1 = "filename.csv";
+        string filename = "filename.csv";
         string filename2 = "carddetails.csv";
         string date;
         vector<CreditCard> cardVec(4);
@@ -1344,7 +1523,13 @@ void menu()
         cardVec[2] = {"B", 2.0, 300, 12};
         cardVec[3] = {"C", 1.5, 200, 18};
         vector<PaymentResult> payVec;
-
+        vector<Loan> loans = {
+            Loan(1, 15000, 10.5),
+            Loan(2, 20000, 8.2),
+            Loan(3, 12000, 12.0)};
+        vector<LoanRepaymentResult> payVecLoan;
+        vector<Investment> investments;
+        vector<InvestmentSelection> result;
         switch (choice)
         {
         case 1:
@@ -1358,10 +1543,11 @@ void menu()
             updateExpense();
             break;
         case 4:
+            displayExpenses();
             cout << "Enter the date (YYYY-MM-DD) to delete all expenses of that day: ";
             cin >> date;
 
-            if (deleteExpenses(filename1, date) || deleteExpenses(filename2, date))
+            if (deleteExpenses(filename, date) || deleteExpenses(filename2, date))
             {
                 cout << "Expenses for date " << date << " have been deleted successfully.\n";
             }
@@ -1369,18 +1555,28 @@ void menu()
             {
                 cout << "No expenses found for the entered date.\n";
             }
+            displayExpenses();
 
             break;
         case 5:
-            allocateEmergencyFunds();
+            double income;
+            cout << "Enter your monthly income in Rupees: ";
+            cin >> income;
+            generateBudgetPlan(income);
+            Sleep(5000);
             break;
         case 6:
-            updateExpenseData();
+            allocateEmergencyFunds();
             break;
         case 7:
-            restoreExpenseData();
+            updateExpenseData();
+            Sleep(200);
             break;
         case 8:
+            restoreExpenseData();
+            Sleep(200);
+            break;
+        case 9:
 
             int goal;
             cout << " Enter your goal that is to be achived by reducing minimum  number of expenses";
@@ -1389,27 +1585,52 @@ void menu()
             optimizeSavings(goal);
 
             break;
-        case 9:
+        case 10:
 
-            cout << "Enter your available funds" << endl;
+            cout << "Enter your available funds: " << endl;
             int funds;
             cin >> funds;
             payVec = optimizeCreditCardPayments(expenseData, cardid, cardVec, funds);
             displayResults(payVec);
 
             break;
-        case 10:
+        case 11:
             travelExpenseMinimizer(); // Call our feature here
             break;
 
-        case 11:
+        case 12:
+            cout << "Enter your income: ";
+            int income1;
+            cin >> income1;
+
+            cout << "Enter the month number (1 for January, 12 for December): ";
+            int month;
+            cin >> month;
+
+            if (month < 1 || month > 12)
+            {
+                cout << "Invalid month entered. Please enter a value between 1 and 12." << endl;
+                break;
+            }
+
+            payVecLoan = optimizeLoanRepayment(expenseData, income, (month - 1), loans);
+            displayLoanResults(payVecLoan);
+            break;
+        case 13:
+            int riskBudget;
+            cout << "Enter your total risk budget: ";
+            cin >> riskBudget;
+            optimizeInvestmentPortfolio(riskBudget);
+            break;
+
+        case 14:
             cout << "Exiting program...\n";
             break;
 
         default:
             cout << "Invalid choice! Please enter a valid option.\n";
         }
-    } while (choice != 11);
+    } while (choice != 14);
 }
 
 // Main function
