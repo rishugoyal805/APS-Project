@@ -648,14 +648,13 @@ void updateExpense()
     {
         cout << "Expense not found in the data structure!" << endl;
     }
+    displayExpenses();
+
 }
 
 // Function to delete expenses for a given date
 bool deleteExpenses(string &filename, string &date)
 {
-
-    displayExpenses();
-
     // Validate Date Format
     if (!validateDateFormat(date))
     {
