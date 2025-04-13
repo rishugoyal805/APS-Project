@@ -1493,6 +1493,54 @@ void generateBudgetPlan(double monthlyIncome)
     cout << "\n TOTAL: " << monthlyIncome << " distributed across needs, wants, savings, and others.\n"
          << endl;
 }
+void encrypt(const string& inputFilename, const string& outputFilename, int key) {
+    ifstream input(inputFilename);
+    ofstream output(outputFilename);
+    if (!input.is_open() || !output.is_open()) {
+        cerr << "Error opening files.\n";
+        return;
+    }
+
+    char ch;
+    while (input.get(ch)) {
+        if (isalpha(ch)) {
+            char base = islower(ch) ? 'a' : 'A';
+            ch = (ch - base + key) % 26 + base;
+        } else if (isdigit(ch)) {
+            ch = (ch - '0' + key) % 10 + '0';
+        }
+        output.put(ch);
+    }
+
+    input.close();
+    output.close();
+    cout << "Encrypted " << inputFilename << "into " << outputFilename << endl;
+}
+
+void decrypt(const string& inputFilename, const string& outputFilename, int key) {
+    ifstream input(inputFilename);
+    ofstream output(outputFilename);
+    if (!input.is_open() || !output.is_open()) {
+        cerr << "Error opening files.\n";
+        return;
+    }
+
+    char ch;
+    while (input.get(ch)) {
+        if (isalpha(ch)) {
+            char base = islower(ch) ? 'a' : 'A';
+            ch = (ch - base - key + 26) % 26 + base;
+        } else if (isdigit(ch)) {
+            ch = (ch - '0' - key + 10) % 10 + '0';
+        }
+        output.put(ch);
+    }
+
+    input.close();
+    output.close();
+    cout << "Decrypted " << inputFilename << "into " << outputFilename << endl;
+}
+
 void menu()
 {
     int choice;
@@ -1512,7 +1560,9 @@ void menu()
         cout << "\n11. Best Flight optimization";
         cout << "\n12. Loan Repayment Strategy";
         cout << "\n13. Investment Portfolio Optimization";
-        cout << "\n14. Exit";
+        cout << "\n14. Encrypt CSV";
+        cout << "\n15. Decrypt CSV";
+        cout << "\n16. Exit";
         cout << "\nEnter your choice: ";
         cin >> choice;
         string filename = "filename.csv";
@@ -1623,14 +1673,14 @@ void menu()
             optimizeInvestmentPortfolio(riskBudget);
             break;
 
-        case 14:
+        case 16:
             cout << "Exiting program...\n";
             break;
 
         default:
             cout << "Invalid choice! Please enter a valid option.\n";
         }
-    } while (choice != 14);
+    } while (choice != 16);
 }
 
 // Main function
