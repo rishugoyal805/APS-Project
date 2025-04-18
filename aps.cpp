@@ -16,8 +16,6 @@ bool isValidCSV(const string &line)
 
 void detectFraudulentTransactions()
 {
-    cout << "\nDetecting Fraudulent Transactions...\n";
-    Sleep(500);
     vector<double> essentialSum(3, 0), nonEssentialSum(3, 0);
     vector<int> essentialCount(3, 0), nonEssentialCount(3, 0);
 
@@ -78,10 +76,9 @@ void detectFraudulentTransactions()
             nonEssentialSD[i] = sqrt(nonEssentialSD[i] / nonEssentialCount[i]);
     }
 
-    cout << "\nFlagged Transactions:\n";
-    cout << "-------------------------------------------------\n";
-    cout << "|    Date    | Category |  Amount  |   Status   |\n";
-    cout << "-------------------------------------------------\n";
+    // Flag to check if any fraudulent transactions are found
+    bool fraudDetected = false;
+    stringstream output;
 
     for (int month = 0; month < 12; month++)
     {
@@ -91,43 +88,56 @@ void detectFraudulentTransactions()
             {
                 if (expenseData[month][day].first[i] > essentialMean[i] + 2 * essentialSD[i])
                 {
-                    // cout << "| " << "2024-"
-                    // << setfill('0') << setw(2) << month + 1 << "-"
-                    // << setfill('0') << setw(2) << day + 1 << " | "
-                    // << left << setw(10) << essentialCategories[i] << " | "
-                    // << right << setw(5) << expenseData[month][day].first[i] << " | "
-                    // << setw(12) << "Fraudulent" << " |\n";
-                    cout << "| 2024-"
-                         << setfill('0') << setw(2) << month + 1 << "-"
-                         << setw(2) << day + 1;
+                    if (!fraudDetected)
+                    {
+                        fraudDetected = true;
+                        output << "\nDetecting Fraudulent Transactions...\n";
+                        Sleep(500);
+                        output << "\nFlagged Transactions:\n";
+                        output << "-------------------------------------------------\n";
+                        output << "|    Date    | Category |  Amount  |   Status   |\n";
+                        output << "-------------------------------------------------\n";
+                    }
+                    output << "| 2024-"
+                           << setfill('0') << setw(2) << month + 1 << "-"
+                           << setw(2) << day + 1;
 
-                    // Reset fill to space for rest of the line
-                    cout << setfill(' ') << " | "
-                         << left << setw(8) << essentialCategories[i] << " | "
-                         << right << setw(8) << expenseData[month][day].first[i] << " | "
-                         << left << setw(10) << "Fraudulent" << " |\n";
+                    output << setfill(' ') << " | "
+                           << left << setw(8) << essentialCategories[i] << " | "
+                           << right << setw(8) << expenseData[month][day].first[i] << " | "
+                           << left << setw(10) << "Fraudulent" << " |\n";
                 }
+
                 if (expenseData[month][day].second[i] > nonEssentialMean[i] + 2 * nonEssentialSD[i])
                 {
-                    // cout << "| " << "2024-"
-                    //      << setfill(' ') << setw(2) << month + 1 << "-"
-                    //      << setfill(' ') << setw(2) << day + 1 << " | "
-                    //      << nonEssentialCategories[i] << " | "
-                    //      << expenseData[month][day].second[i] << " | Fraudulent1 |\n";
-                    cout << "| 2024-"
-                         << setfill('0') << setw(2) << month + 1 << "-"
-                         << setw(2) << day + 1;
+                    if (!fraudDetected)
+                    {
+                        fraudDetected = true;
+                        output << "\nDetecting Fraudulent Transactions...\n";
+                        Sleep(500);
+                        output << "\nFlagged Transactions:\n";
+                        output << "-------------------------------------------------\n";
+                        output << "|    Date    | Category |  Amount  |   Status   |\n";
+                        output << "-------------------------------------------------\n";
+                    }
+                    output << "| 2024-"
+                           << setfill('0') << setw(2) << month + 1 << "-"
+                           << setw(2) << day + 1;
 
-                    // Reset setfill to ' ' (space) for clean spacing
-                    cout << setfill(' ') << " | "
-                         << left << setw(8) << nonEssentialCategories[i] << " | "
-                         << right << setw(8) << expenseData[month][day].second[i] << " | "
-                         << left << setw(10) << "Fraudulent" << " |\n";
+                    output << setfill(' ') << " | "
+                           << left << setw(8) << nonEssentialCategories[i] << " | "
+                           << right << setw(8) << expenseData[month][day].second[i] << " | "
+                           << left << setw(10) << "Fraudulent" << " |\n";
                 }
             }
         }
     }
-    cout << "-------------------------------------------------\n";
+
+    if (fraudDetected)
+    {
+        output << "-------------------------------------------------\n";
+        cout << output.str();
+    }
 }
 
 void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int>>>> &vec)
@@ -140,6 +150,9 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
     }
 
     string line;
+
+    // ✅ Skip the header line
+    getline(file, line);
 
     // Read each row of data
     while (getline(file, line))
@@ -199,9 +212,12 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
             }
         }
     }
+
     Sleep(2000);
-    cout << "Data loaded successfully from " << filename << endl;
-    detectFraudulentTransactions();
+    if (filename != "filename2")
+    {
+        detectFraudulentTransactions();
+    }
     Sleep(2000);
 
     file.close();
@@ -1348,7 +1364,8 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
     int totalSpent = 0;
     for (int day = 0; day < 31; ++day)
     {
-        auto [ess, nonEss] = expenseData[month][day];
+        auto ess = expenseData[month][day].first;
+        auto nonEss = expenseData[month][day].second;
         for (int x : ess)
             totalSpent += x;
         for (int x : nonEss)
@@ -1387,8 +1404,10 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
     }
 
     // Distribute available funds
-    for (auto &[idx, _] : loanPriority)
+    for (const auto &entry : loanPriority)
     {
+        int idx = entry.first;
+
         if (availableFunds <= 0)
             break;
 
@@ -1452,11 +1471,15 @@ void optimizeInvestmentPortfolio(int totalRiskBudget)
 
     cout << "\nInvestment Portfolio Optimization:\n"
          << endl;
-    for (auto &[id, units] : selected)
+    for (const auto &entry : selected)
     {
+        int id = entry.first;
+        int units = entry.second;
+
         cout << "Investment ID: " << id
              << " | Units Selected: " << units
-             << " | Return: Rs." << fixed << setprecision(2) << units * investments[id % 100 - 1].returnPerUnit << endl;
+             << " | Return: Rs." << fixed << setprecision(2)
+             << units * investments[id % 100 - 1].returnPerUnit << endl;
     }
 
     cout << "\nTotal Expected Return: Rs." << fixed << setprecision(2) << totalReturn << endl;
@@ -1734,3 +1757,6 @@ int main()
     menu();
     return 0;
 }
+// 2024-10-09,200,250,600,300,250,500   #Fraudulent: Sudden high spending
+// 2024-10-10,300,400,1000,500,450,900  #Fraudulent: Extreme anomaly
+// 2024-10-11,250,300,800,400,350,700   #Fraudulent: Unusual high expense
