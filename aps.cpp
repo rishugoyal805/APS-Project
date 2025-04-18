@@ -1141,12 +1141,22 @@ void sortEdges(Edge edges[], int edgeCount)
     }
 }
 
+// Overload displayGraph to show all edges
+void displayGraph(const Edge edges[], int count)
+{
+    cout << "\nGraph Edges:\n";
+    for (int i = 0; i < count; ++i)
+        cout << "Edge from " << edges[i].src << " to " << edges[i].dest << " with cost Rs. " << edges[i].weight << "\n";
+}
+
+
 void allocateEmergencyFunds()
 {
     Edge edges[MAX_EDGES];
     int edgeCount = 0;
     int nodeId = 0;
 
+    // Construct Graph First
     for (int month = 0; month < 12; ++month)
     {
         for (int day = 0; day < 31; ++day)
@@ -1169,11 +1179,8 @@ void allocateEmergencyFunds()
                 total2 += expenseData[nextMonth][nextDay].first[i] + expenseData[nextMonth][nextDay].second[i];
             }
 
-            double diff = (total1 > total2) ? (total1 - total2) : (total2 - total1);
-            edges[edgeCount].src = currentNode;
-            edges[edgeCount].dest = nextNode;
-            edges[edgeCount].weight = diff;
-            edgeCount++;
+            double diff = abs(total1 - total2);
+            edges[edgeCount++] = {currentNode, nextNode, diff};
         }
     }
 
@@ -1181,21 +1188,32 @@ void allocateEmergencyFunds()
     initializeDisjointSet(MAX_NODES);
 
     double totalCost = 0;
-    cout << "\nEmergency Fund Transfer:\n";
+    vector<Edge> mst;
     for (int i = 0; i < edgeCount; ++i)
     {
-        int u = edges[i].src;
-        int v = edges[i].dest;
+        int u = edges[i].src, v = edges[i].dest;
         if (findParent(u) != findParent(v))
         {
             unionSets(u, v);
             totalCost += edges[i].weight;
-            cout << "Transfer from " << u << " to " << v << " with cost " << edges[i].weight << "\n";
+            mst.push_back(edges[i]);
         }
     }
 
-    cout << "Total Minimum Transfer Cost: " << totalCost << "\n";
+    cout << "\nEmergency Fund Transfer Graph Constructed.\n";
+   /*displayGraph(edges, edgeCount); */
+
+    cout << "\nMinimum Spanning Transfers (MST):\n";
+    for (auto &e : mst)
+{
+    if (e.weight > 0)
+        cout << "Transfer from " << e.src << " to " << e.dest << " with cost Rs. " << e.weight << "\n";
 }
+
+
+    cout << "Total Minimum Transfer Cost: Rs. " << totalCost << "\n";
+}
+
 
 void buildHuffmanTree(const string &data, unordered_map<char, string> &huffmanCode)
 {
@@ -1256,35 +1274,38 @@ string decompressData(const string &compressed, unordered_map<char, string> &huf
 
 void updateExpenseData()
 {
-    ifstream file(filename);
+    string compressFile = "compress.csv";
+    string workingFile = (isValidFile(compressFile)) ? compressFile : filename;
+
+    ifstream file(workingFile);
     stringstream buffer;
     buffer << file.rdbuf();
-    string data = buffer.str(); // full CSV contents
+    string data = buffer.str();
     file.close();
 
     unordered_map<char, string> huffmanCode;
     buildHuffmanTree(data, huffmanCode);
     string compressed = compressData(data, huffmanCode);
 
-    ofstream outFile(filename, ios::trunc);
-
-    // Write map size
+    ofstream outFile(compressFile);
     outFile << huffmanCode.size() << '\n';
-    for (const auto &pair : huffmanCode)
-    {
+    for (auto &pair : huffmanCode)
         outFile << (int)(unsigned char)pair.first << ' ' << pair.second << '\n';
-    }
-
-    // Write compressed string
     outFile << compressed;
     outFile.close();
 
-    cout << "CSV data compressed and updated!\n";
+    cout << "CSV data compressed to compress.csv!\n";
 }
-
 void restoreExpenseData()
 {
-    ifstream file(filename);
+    string compressFile = "compress.csv";
+    if (!isValidFile(compressFile))
+    {
+        cout << "No compressed file found to decompress.\n";
+        return;
+    }
+
+    ifstream file(compressFile);
     int mapSize;
     file >> mapSize;
 
@@ -1297,26 +1318,18 @@ void restoreExpenseData()
         huffmanCode[(char)chInt] = code;
     }
 
-    file >> ws; // Eat any whitespaces or newlines
+    file.ignore(); // skip the newline after header
     string compressed;
-    getline(file, compressed, '\0'); // Read till end
+    getline(file, compressed, '\0');
     file.close();
 
     string decompressed = decompressData(compressed, huffmanCode);
-    ofstream outFile(filename, ios::trunc);
+
+    ofstream outFile(filename);
     outFile << decompressed;
     outFile.close();
 
-    cout << "CSV data decompressed and restored!\n";
-}
-
-void displayGraph(const vector<Edge> &edges)
-{
-    cout << "Graph Representation:\n";
-    for (const auto &edge : edges)
-    {
-        cout << "Account " << edge.src << " -(" << edge.weight << ")-> Account " << edge.dest << "\n";
-    }
+    cout << "Data restored from compress.csv to filename.csv\n";
 }
 
 void loadExpenseData(map<string, double> &expenses)
@@ -1522,7 +1535,7 @@ void encrypt(const string &inputFilename, const string &outputFilename, int key)
     ofstream output(outputFilename);
     if (!input.is_open() || !output.is_open())
     {
-        cerr << "Error opening files.\n";
+        cout << "Error opening files.\n";
         return;
     }
 
@@ -1552,7 +1565,7 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
     ofstream output(outputFilename);
     if (!input.is_open() || !output.is_open())
     {
-        cerr << "Error opening files.\n";
+        cout << "Error opening files.\n";
         return;
     }
 
@@ -1712,8 +1725,8 @@ void menu()
             int key;
             cout << "Enter encryption key (positive integer): ";
             cin >> key;
-            encrypt("filename.csv", "caesar_encrypted_filename.csv", key);
-            encrypt("carddetails.csv", "caesar_encrypted_carddetails.csv", key);
+            encrypt("filename.csv", "encrypted_filename.csv", key);
+            encrypt("carddetails.csv", "encrypted_carddetails.csv", key);
             break;
         }
         case 15:
@@ -1721,8 +1734,8 @@ void menu()
             int key;
             cout << "Enter decryption key (must match encryption key): ";
             cin >> key;
-            decrypt("caesar_encrypted_filename.csv", "caesar_decrypted_filename.csv", key);
-            decrypt("caesar_encrypted_carddetails.csv", "caesar_decrypted_carddetails.csv", key);
+            decrypt("encrypted_filename.csv", "decrypted_filename.csv", key);
+            decrypt("encrypted_carddetails.csv", "decrypted_carddetails.csv", key);
             break;
         }
         case 16:
