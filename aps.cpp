@@ -107,28 +107,6 @@ void detectFraudulentTransactions()
                            << right << setw(8) << expenseData[month][day].first[i] << " | "
                            << left << setw(10) << "Fraudulent" << " |\n";
                 }
-
-                if (expenseData[month][day].second[i] > nonEssentialMean[i] + 2 * nonEssentialSD[i])
-                {
-                    if (!fraudDetected)
-                    {
-                        fraudDetected = true;
-                        output << "\nDetecting Fraudulent Transactions...\n";
-                        Sleep(500);
-                        output << "\nFlagged Transactions:\n";
-                        output << "-------------------------------------------------\n";
-                        output << "|    Date    | Category |  Amount  |   Status   |\n";
-                        output << "-------------------------------------------------\n";
-                    }
-                    output << "| 2024-"
-                           << setfill('0') << setw(2) << month + 1 << "-"
-                           << setw(2) << day + 1;
-
-                    output << setfill(' ') << " | "
-                           << left << setw(8) << nonEssentialCategories[i] << " | "
-                           << right << setw(8) << expenseData[month][day].second[i] << " | "
-                           << left << setw(10) << "Fraudulent" << " |\n";
-                }
             }
         }
     }
