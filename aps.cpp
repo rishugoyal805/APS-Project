@@ -1277,6 +1277,8 @@ void updateExpenseData()
 void restoreExpenseData()
 {
     string compressFile = "compress.csv";
+    string decompressFile = "decompress.csv";
+
     if (!isValidFile(compressFile))
     {
         cout << "No compressed file found to decompress.\n";
@@ -1303,12 +1305,13 @@ void restoreExpenseData()
 
     string decompressed = decompressData(compressed, huffmanCode);
 
-    ofstream outFile(filename);
+    ofstream outFile(decompressFile);
     outFile << decompressed;
     outFile.close();
 
-    cout << "Data restored from compress.csv to filename.csv\n";
+    cout << "Data restored from compress.csv to decompress.csv\n";
 }
+
 
 void loadExpenseData(map<string, double> &expenses)
 {
