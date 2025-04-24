@@ -1575,18 +1575,18 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
         if (isalpha(ch))
         {
             char base = islower(ch) ? 'a' : 'A';
-            ch = (ch - base - key + 26) % 26 + base;
+            ch = ((ch - base - key) % 26 + 26) % 26 + base;
         }
         else if (isdigit(ch))
         {
-            ch = (ch - '0' - key + 10) % 10 + '0';
+            ch = ((ch - '0' - key) % 10 + 10) % 10 + '0';
         }
         output.put(ch);
     }
 
     input.close();
     output.close();
-    cout << "Decrypted " << inputFilename << "into " << outputFilename << endl;
+    cout << "Decrypted " << inputFilename << " into " << outputFilename << endl;
 }
 
 void menu()
