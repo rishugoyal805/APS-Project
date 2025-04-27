@@ -83,6 +83,7 @@ vector<vector<pair<vector<int>, vector<int>>>> cardid(12, vector<pair<vector<int
 vector<string> essentialCategories = {"food", "work", "travel"};
 vector<string> nonEssentialCategories = {"snacks", "fun", "extra"};
 
+
 // Store expense data: date → category → list of expenses
 // map<string, map<string, vector<Expense>>> expenseData;
 const string filename = "filename.csv";

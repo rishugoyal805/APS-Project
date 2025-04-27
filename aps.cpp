@@ -1,5 +1,7 @@
 #include "aps.h"
 
+#include<limits>
+
 using namespace std;
 // Function to validate if a file exists
 bool isValidFile(const string &filename)
@@ -739,18 +741,22 @@ bool deleteExpenses(string &filename, string &date)
     }
 }
 void menu();
-void optimizeSavingsPlan(vector<int> &nonEssentialExpenses, int &goal)
+void optimizeSavingsPlan(vector<tuple<int, int, string>> &nonEssentialExpensesWithDates, int &goal)
 {
-    int n = nonEssentialExpenses.size();
+    int n = nonEssentialExpensesWithDates.size();
     vector<vector<int>> dp(n + 1, vector<int>(goal + 1, -1)); // -1 means unreachable
     vector<vector<int>> count(n + 1, vector<int>(goal + 1, 1e9));
+    vector<vector<vector<tuple<int, int, string>>>> chosen(n + 1, vector<vector<tuple<int, int, string>>>(goal + 1)); // (expense, date, category)
 
     dp[0][0] = 0;
     count[0][0] = 0;
 
     for (int i = 1; i <= n; i++)
     {
-        int expense = nonEssentialExpenses[i - 1];
+        int expense = get<0>(nonEssentialExpensesWithDates[i - 1]);
+        int date = get<1>(nonEssentialExpensesWithDates[i - 1]);
+        string category = get<2>(nonEssentialExpensesWithDates[i - 1]);
+
         for (int j = 0; j <= goal; j++)
         {
             // Case 1: Don't take the current expense
@@ -758,6 +764,7 @@ void optimizeSavingsPlan(vector<int> &nonEssentialExpenses, int &goal)
             {
                 dp[i][j] = dp[i - 1][j];
                 count[i][j] = count[i - 1][j];
+                chosen[i][j] = chosen[i - 1][j];
             }
 
             // Case 2: Take the current expense (if it fits)
@@ -770,6 +777,8 @@ void optimizeSavingsPlan(vector<int> &nonEssentialExpenses, int &goal)
                 {
                     dp[i][j] = newSum;
                     count[i][j] = newCount;
+                    chosen[i][j] = chosen[i - 1][j - expense];
+                    chosen[i][j].push_back({expense, date, category});
                 }
             }
         }
@@ -777,6 +786,7 @@ void optimizeSavingsPlan(vector<int> &nonEssentialExpenses, int &goal)
 
     // Find max achievable sum ≤ goal with fewest entries
     int bestSavings = 0, minCount = 1e9;
+    vector<tuple<int, int, string>> bestSet;
     for (int j = 0; j <= goal; j++)
     {
         if (dp[n][j] != -1)
@@ -785,41 +795,65 @@ void optimizeSavingsPlan(vector<int> &nonEssentialExpenses, int &goal)
             {
                 bestSavings = dp[n][j];
                 minCount = count[n][j];
+                bestSet = chosen[n][j];
             }
         }
     }
 
     cout << "\nTotal Savings Achieved: " << bestSavings
          << " using " << minCount << " expense entries.\n";
+    cout << "-------------------------------------------------\n";
+
+    cout << "By reducing the following expenses, you can successfully meet your savings target upto " << bestSavings << "!\n";
+    cout << "-------------------------------------------------\n";
+
+
+    cout << left << setw(10) << "Amount" << setw(12) << "Date (MM-DD)" << "Category" << endl;
+    cout << "-----------------------------------------" << endl;
+    for (auto &[e, d, cat] : bestSet)
+    {
+        int month = d / 100;
+        int day = d % 100;
+        cout << left << setw(10) << e << setfill('0') << setw(2) << month << "-" << setw(2) << day << setfill(' ') << "   " << cat << endl;
+    }
+    cout<<endl;
 }
 
 double optimizeSavings(int &goal)
 {
-    vector<int> nonEssentialExpenses;
+    vector<tuple<int, int, string>> nonEssentialExpensesWithDates;
 
-    for (const auto &month : expenseData)
+    for (int month = 0; month < 12; ++month)
     {
-        for (const auto &day : month)
+        for (int day = 0; day < 31; ++day)
         {
-            const vector<int> &nonEssential = day.second;
-            for (int expense : nonEssential)
+            const vector<int> &nonEssential = expenseData[month][day].second;
+            int date = (month + 1) * 100 + (day + 1); // format: MMDD
+
+            for (int i = 0; i < nonEssential.size(); ++i)
             {
-                if (expense != 0)
+                if (nonEssential[i] != 0)
                 {
-                    nonEssentialExpenses.push_back(expense);
+                    nonEssentialExpensesWithDates.push_back({nonEssential[i], date, nonEssentialCategories[i]});
                 }
             }
         }
     }
 
-    cout << "\nExtracted Non-Essential Expenses:\n";
-    for (int e : nonEssentialExpenses)
+    cout << "\nAll Extracted Non-Essential Expenses with Dates and Categories:\n";
+    cout << left << setw(10) << "Amount" << setw(12) << "Date (MM-DD)" << "Category" << endl;
+    cout << "-----------------------------------------" << endl;
+    for (auto &entry : nonEssentialExpensesWithDates)
     {
-        cout << e << " ";
+        int expense = get<0>(entry);
+        int d = get<1>(entry);
+        string category = get<2>(entry);
+        int month = d / 100;
+        int day = d % 100;
+        cout << left << setw(10) << expense << setfill('0') << setw(2) << month << "-" << setw(2) << day << setfill(' ') << "   " << category << endl;
     }
-    cout << "\n";
 
-    optimizeSavingsPlan(nonEssentialExpenses, goal);
+    optimizeSavingsPlan(nonEssentialExpensesWithDates, goal);
     menu();
     return 0;
 }
@@ -1657,12 +1691,21 @@ void menu()
             break;
         case 9:
 
-            int goal;
-            cout << " Enter your goal that is to be achived by reducing minimum  number of expenses";
-            cin >> goal;
-
-            optimizeSavings(goal);
-
+        int goal;
+        cout << "Enter your target savings goal: ";
+        cin >> goal;
+        
+        cout << "\nWould you like to allow a small flexibility margin above your goal? (optional)\n";
+        cout << "Enter the extra amount you are willing to accept (Enter 0 if you want an exact match): ";
+        int excessAmount;
+        cin >> excessAmount;
+        
+        // Adjusted goal
+        goal = goal + excessAmount;
+        
+        cout << "\nOptimizing to achieve a goal of up to " << goal << "...\n";
+        optimizeSavings(goal);
+        
             break;
         case 10:
 
