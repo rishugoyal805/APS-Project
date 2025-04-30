@@ -16,6 +16,18 @@ bool isValidCSV(const string &line)
     return commaCount == 3; // Expecting 4 fields (date, name, category, amount)
 }
 
+bool isValidDate(int year, int month, int day)
+{
+    static const int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (month < 1 || month > 12)
+        return false;
+    if (day < 1)
+        return false;
+    if (month == 2 && ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)))
+        return day <= 29; // Leap year
+    return day <= daysInMonth[month - 1];
+}
+
 void detectFraudulentTransactions()
 {
     vector<double> essentialSum(3, 0), nonEssentialSum(3, 0);
@@ -293,8 +305,24 @@ void addExpense()
     }
 
     // Extract month and day from the date
-    int month = stoi(date.substr(5, 2)) - 1; // 0-based index for month
-    int day = stoi(date.substr(8, 2)) - 1;   // 0-based index for day
+    int month, day;
+    try
+    {
+        month = stoi(date.substr(5, 2)) - 1;
+        day = stoi(date.substr(8, 2)) - 1;
+    }
+    catch (...)
+    {
+        cout << "Date parsing failed. Please ensure it's numeric and in YYYY-MM-DD format.\n";
+        return;
+    }
+
+    int year = stoi(date.substr(0, 4));
+    if (!isValidDate(year, month + 1, day + 1))
+    {
+        cout << "Invalid date! Please enter a real calendar date.\n";
+        return;
+    }
 
     if (month < 0 || month >= 12 || day < 0 || day >= 31)
     {
@@ -355,18 +383,24 @@ void addExpense()
         double amount;
         int c_id;
         cout << "Enter amount " << category << ": ";
-        cin >> amount;
+        if (!isValidDoubleInput(amount))
+        {
+            cout << "Invalid amount entered! Please enter a non-negative number.\n";
+            return;
+        }
         // bool flag = true;
         if (amount > 0)
         {
             while (true)
             {
                 cout << "Choose the card ID you used for the payment:\n";
-                cout << "1 -> A\n";
-                cout << "2 -> B\n";
-                cout << "3 -> C\n";
-                cout << "4 -> None\n";
-                cin >> c_id;
+                cout << "1 -> A\n2 -> B\n3 -> C\n4 -> None\n";
+                cout << "Enter choice: ";
+                if (!isValidIntInput(c_id))
+                {
+                    cout << "Invalid input! Please enter a number between 1 and 4.\n";
+                    return;
+                }
 
                 if (c_id >= 1 && c_id <= 3)
                 {
@@ -404,7 +438,7 @@ void addExpense()
     for (size_t i = 0; i < nonEssentialCategories.size(); ++i)
     {
         expenseData[month][day].second[i] += expenseEntry[nonEssentialCategories[i]]; // Add to respective category
-        cardid[month][day].second[i] = ((cards[essentialCategories[i]]));
+        cardid[month][day].second[i] = ((cards[nonEssentialCategories[i]]));
     }
 
     // Append to CSV file
@@ -792,38 +826,27 @@ void optimizeSavingsPlan(vector<tuple<int, int, string>> &nonEssentialExpensesWi
         }
     }
 
-    cout << "\nTotal Savings Achieved: " << bestSavings << " using " << minCount << " expense entries.\n";
-    cout << "------------------------------------------------------\n";
+    cout << "\nTotal Savings Achieved: " << bestSavings
+         << " using " << minCount << " expense entries.\n";
+    cout << "-------------------------------------------------\n";
 
     cout << "By reducing the following expenses, you can successfully meet your savings target upto " << bestSavings << "!\n";
-    cout << "---------------------------------------------------------------------------------------------\n";
-    cout << "+-----------+----------------+----------------+" << endl;
-    cout << "| " << left << setw(10) << "Amount"
-         << "| " << setw(15) << "Date (MM-DD)"
-         << "| " << setw(15) << "Category"
-         << "|" << endl;
+    cout << "-------------------------------------------------\n";
 
-    cout << "+-----------+----------------+----------------+" << endl;
-
-    for (auto &[e, d, cat] : bestSet)
+    cout << left << setw(10) << "Amount" << setw(12) << "Date (MM-DD)" << "Category" << endl;
+    cout << "-----------------------------------------" << endl;
+    for (const auto &entry : bestSet)
     {
         int month = d / 100;
         int day = d % 100;
-
-        // Format date as MM-DD with leading zeros
-        stringstream dateStream;
-        dateStream << setfill('0') << setw(2) << month << "-" << setw(2) << day;
-
-        cout << "| " << left << setw(10) << e
-             << "| " << setw(15) << dateStream.str()
-             << "| " << setw(15) << cat
-             << "|" << endl;
+        cout << left << setw(10) << e << setfill('0') << setw(2) << month << "-" << setw(2) << day << setfill(' ') << "   " << cat << endl;
     }
 
+    cout << endl;
     cout << "+-----------+----------------+----------------+" << endl;
 }
 
-void optimizeSavings(int &goal)
+double optimizeSavings(int &goal)
 {
     vector<tuple<int, int, string>> nonEssentialExpensesWithDates;
 
@@ -843,28 +866,23 @@ void optimizeSavings(int &goal)
             }
         }
     }
-    // cout << "\nAll Extracted Non-Essential Expenses with Dates and Categories:\n";
-    // cout << left << setw(10) << "Amount" << setw(12) << "Date (MM-DD)" << "Category" << endl;
-    // cout << "----------------------------------------------" << endl;
 
-    // for (const auto &entry : nonEssentialExpensesWithDates)
-    // {
-    //     int expense = get<0>(entry);
-    //     int d = get<1>(entry); // Format: MMDD (e.g., 1005 for Oct 5)
-    //     string category = get<2>(entry);
-
-    //     int month = d / 100;
-    //     int day = d % 100;
-
-    //     // Format and print with proper padding
-    //     stringstream dateStream;
-    //     dateStream << setfill('0') << setw(2) << month << "-" << setw(2) << day;
-
-    //     cout << left << setw(10) << expense << setw(12) << dateStream.str() << category << endl;
-    // }
+    cout << "\nAll Extracted Non-Essential Expenses with Dates and Categories:\n";
+    cout << left << setw(10) << "Amount" << setw(12) << "Date (MM-DD)" << "Category" << endl;
+    cout << "-----------------------------------------" << endl;
+    for (auto &entry : nonEssentialExpensesWithDates)
+    {
+        int expense = get<0>(entry);
+        int d = get<1>(entry);
+        string category = get<2>(entry);
+        int month = d / 100;
+        int day = d % 100;
+        cout << left << setw(10) << expense << setfill('0') << setw(2) << month << "-" << setw(2) << day << setfill(' ') << "   " << category << endl;
+    }
 
     optimizeSavingsPlan(nonEssentialExpensesWithDates, goal);
-    return;
+    menu();
+    return 0;
 }
 
 vector<PaymentResult> optimizeCreditCardPayments(
@@ -1631,119 +1649,138 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
 void menu()
 {
     int choice;
-    do
+
+    while (true)
     {
-        cout << "\nExpense Tracker Menu:";
-        cout << "\n1. Display Expenses";
-        cout << "\n2. Add Expense";
-        cout << "\n3. Update Expense";
-        cout << "\n4. Delete Expense";
-        cout << "\n5. Design A budget plan";
-        cout << "\n6. Allocate Emergency Funds";
-        cout << "\n7. Compress Data";
-        cout << "\n8. Decompress Data";
-        cout << "\n9. Optimize Savings";
-        cout << "\n10. Credit Card Payment Strategy";
-        cout << "\n11. Best Flight optimization";
-        cout << "\n12. Loan Repayment Strategy";
-        cout << "\n13. Investment Portfolio Optimization";
-        cout << "\n14. Encrypt CSV";
-        cout << "\n15. Decrypt CSV";
-        cout << "\n16. Exit";
-        cout << "\nEnter your choice: ";
-        cin >> choice;
-        string filename = "OctExpenses.csv";
-        string filename2 = "carddetails.csv";
-        string date;
-        vector<CreditCard> cardVec(4);
-        cardVec[1] = {"A", 3.5, 500, 15};
-        cardVec[2] = {"B", 2.0, 300, 12};
-        cardVec[3] = {"C", 1.5, 200, 18};
-        vector<PaymentResult> payVec;
-        vector<Loan> loans = {
-            Loan(1, 15000, 10.5),
-            Loan(2, 20000, 8.2),
-            Loan(3, 12000, 12.0)};
-        vector<LoanRepaymentResult> payVecLoan;
-        vector<Investment> investments;
-        vector<InvestmentSelection> result;
-        switch (choice)
+        try
         {
-        case 1:
-            displayExpenses();
-            Sleep(2000); // Sleep for 2 seconds
-            break;
-        case 2:
-            addExpense();
-            break;
-        case 3:
-            updateExpense();
-            break;
-        case 4:
-            displayExpenses();
-            cout << "Enter the date (YYYY-MM-DD) to delete all expenses of that day: ";
-            cin >> date;
-            if (deleteExpenses(filename, date) || deleteExpenses(filename2, date))
+            cout << "\nExpense Tracker Menu:";
+            cout << "\n1. Display Expenses";
+            cout << "\n2. Add Expense";
+            cout << "\n3. Update Expense";
+            cout << "\n4. Delete Expense";
+            cout << "\n5. Design A budget plan";
+            cout << "\n6. Allocate Emergency Funds";
+            cout << "\n7. Compress Data";
+            cout << "\n8. Decompress Data";
+            cout << "\n9. Optimize Savings";
+            cout << "\n10. Credit Card Payment Strategy";
+            cout << "\n11. Best Flight optimization";
+            cout << "\n12. Loan Repayment Strategy";
+            cout << "\n13. Investment Portfolio Optimization";
+            cout << "\n14. Encrypt CSV";
+            cout << "\n15. Decrypt CSV";
+            cout << "\n16. Exit";
+            cout << "\nEnter your choice: ";
+
+            cin >> choice;
+
+            // Validate input
+            if (cin.fail())
             {
-                cout << "Expenses for date " << date << " have been deleted successfully.\n";
-                Sleep(2000);
+                throw invalid_argument("Input must be an integer.");
             }
-            else
+
+            if (choice < 1 || choice > 16)
             {
-                cout << "No expenses found for the entered date.\n";
+                throw out_of_range("Choice must be between 1 and 16.");
             }
-            displayExpenses();
-            break;
-        case 5:
-        {
-            double income;
-            cout << "Enter your monthly income in Rupees: ";
-            cin >> income;
-            // Input validation
-            if (cin.fail() || income <= 0)
+
+            string filename = "OctExpenses.csv";
+            string filename2 = "carddetails.csv";
+            string date;
+            vector<CreditCard> cardVec(4);
+            cardVec[1] = {"A", 3.5, 500, 15};
+            cardVec[2] = {"B", 2.0, 300, 12};
+            cardVec[3] = {"C", 1.5, 200, 18};
+            vector<PaymentResult> payVec;
+            vector<Loan> loans = {
+                Loan(1, 15000, 10.5),
+                Loan(2, 20000, 8.2),
+                Loan(3, 12000, 12.0)};
+            vector<LoanRepaymentResult> payVecLoan;
+            vector<Investment> investments;
+            vector<InvestmentSelection> result;
+            switch (choice)
             {
-                cin.clear();                                         // Clear input flag
-                cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
-                cout << "Invalid income amount. Please enter a positive numeric value.\n";
+            case 1:
+                displayExpenses();
+                Sleep(2000); // Sleep for 2 seconds
+                break;
+            case 2:
+                addExpense();
+                break;
+            case 3:
+                updateExpense();
+                break;
+            case 4:
+                displayExpenses();
+                cout << "Enter the date (YYYY-MM-DD) to delete all expenses of that day: ";
+                cin >> date;
+
+                if (deleteExpenses(filename, date) || deleteExpenses(filename2, date))
+                {
+                    cout << "Expenses for date " << date << " have been deleted successfully.\n";
+                    Sleep(2000);
+                }
+                else
+                {
+                    cout << "No expenses found for the entered date.\n";
+                }
+                displayExpenses();
+
+                break;
+            case 5:
+            {
+                double income;
+                cout << "Enter your monthly income in Rupees: ";
+                cin >> income;
+
+                // Input validation
+                if (cin.fail() || income <= 0)
+                {
+                    cin.clear();                                         // Clear input flag
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
+                    cout << "Invalid income amount. Please enter a positive numeric value.\n";
+                    break;
+                }
+
+                cout << "\nGenerating your personalized budget plan...\n\n";
+                generateBudgetPlan(income);
+                Sleep(5000); // Delay to simulate processing
                 break;
             }
-            cout << "\nGenerating your personalized budget plan...\n\n";
-            generateBudgetPlan(income);
-            Sleep(5000); // Delay to simulate processing
-            break;
-        }
-        case 6:
-            allocateEmergencyFunds();
-            break;
-        case 7:
-            updateExpenseData();
-            Sleep(200);
-            break;
-        case 8:
-            restoreExpenseData();
-            Sleep(200);
-            break;
-        case 9:
-            int goal;
-            cout << "Enter your target savings goal: ";
-            cin >> goal;
-            cout << "\nWould you like to allow a small flexibility margin above your goal? (optional)\n";
-            cout << "Enter the extra amount you are willing to accept (Enter 0 if you want an exact match): ";
-            int excessAmount;
-            cin >> excessAmount;
-            cout << "To save just Rs." << goal << "\n";
-            optimizeSavings(goal);
-            Sleep(5000);
-            if (excessAmount == 0)
+
+            case 6:
+                allocateEmergencyFunds();
                 break;
-            else
-            {
+            case 7:
+                updateExpenseData();
+                Sleep(200);
+                break;
+            case 8:
+                restoreExpenseData();
+                Sleep(200);
+                break;
+            case 9:
+
+                int goal;
+                cout << "Enter your target savings goal: ";
+                cin >> goal;
+
+                cout << "\nWould you like to allow a small flexibility margin above your goal? (optional)\n";
+                cout << "Enter the extra amount you are willing to accept (Enter 0 if you want an exact match): ";
+                int excessAmount;
+                cin >> excessAmount;
+
+                // Adjusted goal
                 goal = goal + excessAmount;
+
                 cout << "\nOptimizing to achieve a goal of up to " << goal << "...\n";
                 optimizeSavings(goal);
-            }
-            break;
-        case 10:
+
+                break;
+            case 10:
 
             cout << "Enter your available funds: ";
             int funds;
