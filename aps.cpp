@@ -16,30 +16,6 @@ bool isValidCSV(const string &line)
     return commaCount == 3; // Expecting 4 fields (date, name, category, amount)
 }
 
-bool isValidDoubleInput(double &input)
-{
-    cin >> input;
-    if (cin.fail() || input < 0)
-    {
-        cin.clear();                                         // Clear error flags
-        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
-        return false;
-    }
-    return true;
-}
-
-bool isValidIntInput(int &input)
-{
-    cin >> input;
-    if (cin.fail() || input < 0)
-    {
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return false;
-    }
-    return true;
-}
-
 void detectFraudulentTransactions()
 {
     vector<double> essentialSum(3, 0), nonEssentialSum(3, 0);
@@ -289,7 +265,6 @@ void displayExpenses()
             cout << right << setw(5) << expenseData[month][day].second[1] << " | ";
             cout << right << setw(7) << expenseData[month][day].second[2] << " | ";
             cout << "\n";
-        
         }
     }
 
@@ -321,38 +296,6 @@ void addExpense()
     int month = stoi(date.substr(5, 2)) - 1; // 0-based index for month
     int day = stoi(date.substr(8, 2)) - 1;   // 0-based index for day
 
-    // Check if the date already has data in expenseData
-    bool dateExists = false;
-
-    // Check for any non-zero value in essential categories
-    for (int val : expenseData[month][day].first)
-    {
-        if (val != 0)
-        {
-            dateExists = true;
-            break;
-        }
-    }
-
-    // If not found yet, check non-essential categories
-    if (!dateExists)
-    {
-        for (int val : expenseData[month][day].second)
-        {
-            if (val != 0)
-            {
-                dateExists = true;
-                break;
-            }
-        }
-    }
-
-    if (dateExists)
-    {
-        cout << "Error: An expense entry already exists for this date!\n";
-        return;
-    }
-
     if (month < 0 || month >= 12 || day < 0 || day >= 31)
     {
         cout << "Invalid date! Month or day out of range.\n";
@@ -370,24 +313,18 @@ void addExpense()
         int c_id;
 
         cout << "Enter amount " << category << ": ";
-        if (!isValidDoubleInput(amount))
-        {
-            cout << "Invalid amount entered! Please enter a non-negative number.\n";
-            return;
-        }
+        cin >> amount;
 
         if (amount > 0)
         {
             while (true)
             {
                 cout << "Choose the card ID you used for the payment:\n";
-                cout << "1 -> A\n2 -> B\n3 -> C\n4 -> None\n";
-                cout << "Enter choice: ";
-                if (!isValidIntInput(c_id))
-                {
-                    cout << "Invalid input! Please enter a number between 1 and 4.\n";
-                    return;
-                }
+                cout << "1 -> A\n";
+                cout << "2 -> B\n";
+                cout << "3 -> C\n";
+                cout << "4 -> None\n";
+                cin >> c_id;
 
                 if (c_id >= 1 && c_id <= 3)
                 {
@@ -400,7 +337,7 @@ void addExpense()
                 }
                 else
                 {
-                    cout << "Wrong choice! Valid options: 1-4.\n";
+                    cout << "Wrong choice, try again.\n";
                 }
             }
         }
@@ -868,17 +805,8 @@ void optimizeSavingsPlan(vector<tuple<int, int, string>> &nonEssentialExpensesWi
 
     cout << "+-----------+----------------+----------------+" << endl;
 
-<<<<<<< HEAD
     for (auto &[e, d, cat] : bestSet)
-=======
-    cout << left << setw(10) << "Amount" << setw(12) << "Date (MM-DD)" << "Category" << endl;
-    cout << "-----------------------------------------" << endl;
-    for (const auto &entry : bestSet)
->>>>>>> 7dd37c0cda3bc80fc4ecbc09be6596348e9e2500
     {
-        int e, d;
-        string cat;
-        tie(e, d, cat) = entry;
         int month = d / 100;
         int day = d % 100;
 
@@ -892,11 +820,7 @@ void optimizeSavingsPlan(vector<tuple<int, int, string>> &nonEssentialExpensesWi
              << "|" << endl;
     }
 
-<<<<<<< HEAD
     cout << "+-----------+----------------+----------------+" << endl;
-=======
-    cout << endl;
->>>>>>> 7dd37c0cda3bc80fc4ecbc09be6596348e9e2500
 }
 
 void optimizeSavings(int &goal)
@@ -1042,14 +966,29 @@ vector<PaymentResult> optimizeCreditCardPayments(
 
 void displayResults(const vector<PaymentResult> &results)
 {
+    cout << "+-----------+------------+-----------+-----------+-------------------+" << endl;
+    cout << left
+         << "| " << setw(10) << "Card"
+         << "| " << setw(11) << "Total Due"
+         << "| " << setw(10) << "Paid"
+         << "| " << setw(10) << "Unpaid"
+         << "| " << setw(18) << "Interest Incurred"
+         << "|" << endl;
+
+    cout << "+-----------+------------+-----------+-----------+-------------------+" << endl;
     for (const auto &r : results)
     {
-        cout << "Card: " << r.card
-             << " | Total Due: " << r.totalDue
-             << " | Paid: " << r.amountPaid
-             << " | Unpaid: " << r.unpaidAmount
-             << " | Interest Incurred: " << r.interest << endl;
+        cout << left
+             << "| " << setw(10) << r.card
+             << "| " << setw(11) << fixed << setprecision(2) << r.totalDue
+             << "| " << setw(10) << r.amountPaid
+             << "| " << setw(10) << r.unpaidAmount
+             << "| " << setw(18) << ("Rs. " + to_string(r.interest))
+             << "|" << endl;
     }
+
+    // Footer border
+    cout << "+-----------+------------+-----------+-----------+-------------------+" << endl;
 }
 
 int findMinTravelCost(
@@ -1390,21 +1329,19 @@ void updateExpenseData()
 
     cout << "CSV data compressed to compress.csv!\n";
 }
+
 void restoreExpenseData()
 {
     string compressFile = "compress.csv";
     string decompressFile = "decompress.csv";
-
     if (!isValidFile(compressFile))
     {
         cout << "No compressed file found to decompress.\n";
         return;
     }
-
     ifstream file(compressFile);
     int mapSize;
     file >> mapSize;
-
     unordered_map<char, string> huffmanCode;
     for (int i = 0; i < mapSize; ++i)
     {
@@ -1413,14 +1350,11 @@ void restoreExpenseData()
         file >> chInt >> code;
         huffmanCode[(char)chInt] = code;
     }
-
     file.ignore(); // skip the newline after header
     string compressed;
     getline(file, compressed, '\0');
     file.close();
-
     string decompressed = decompressData(compressed, huffmanCode);
-
     ofstream outFile(decompressFile);
     outFile << decompressed;
     outFile.close();
@@ -1480,15 +1414,12 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
         for (int x : nonEss)
             totalSpent += x;
     }
-
     cout << "\n Total Spent: Rs." << totalSpent << endl;
     cout << " Total Income: Rs." << income << endl;
 
     int availableFunds = max(0, income - totalSpent);
     cout << " Available for Loan Repayment: Rs." << availableFunds << endl
          << endl;
-
-    // Sort loans by interest density (high interest per unit amount first)
     vector<pair<int, double>> loanPriority; // {index, interest density}
     for (int i = 0; i < loans.size(); ++i)
     {
@@ -1500,8 +1431,6 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
          { return a.second > b.second; });
 
     vector<LoanRepaymentResult> results(loans.size());
-
-    // Initialize all loans with 0 paid
     for (int i = 0; i < loans.size(); ++i)
     {
         results[i] = {
@@ -1511,8 +1440,6 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
             loans[i].amount,
             loans[i].amount * loans[i].interestRate / 100.0};
     }
-
-    // Distribute available funds
     for (const auto &entry : loanPriority)
     {
         int idx = entry.first;
@@ -1527,21 +1454,32 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
 
         availableFunds -= pay;
     }
-
     return results;
 }
 
 void displayLoanResults(const vector<LoanRepaymentResult> &results)
 {
-    cout << "\nLoan Repayment Summary:\n\n";
+    cout << "\nLoan Repayment Summary:\n";
+    cout << "+-----------+----------------+-----------+-----------+-------------------+" << endl;
+    cout << left
+         << "| " << setw(10) << "Loan ID"
+         << "| " << setw(15) << "Original (Rs.)"
+         << "| " << setw(10) << "Paid"
+         << "| " << setw(10) << "Unpaid"
+         << "| " << setw(18) << "Interest Incurred"
+         << "|" << endl;
+    cout << "+-----------+----------------+-----------+-----------+-------------------+" << endl;
     for (const auto &r : results)
     {
-        cout << "Loan ID: " << r.id
-             << " | Original: Rs." << fixed << setprecision(2) << r.originalAmount
-             << " | Paid: Rs." << r.amountPaid
-             << " | Unpaid: Rs." << r.unpaidAmount
-             << " | Interest: Rs." << r.interestIncurred << endl;
+        cout << left
+             << "| " << setw(10) << r.id
+             << "| " << setw(15) << fixed << setprecision(2) << r.originalAmount
+             << "| " << setw(10) << r.amountPaid
+             << "| " << setw(10) << r.unpaidAmount
+             << "| " << setw(18) << ("Rs. " + to_string(r.interestIncurred))
+             << "|" << endl;
     }
+    cout << "+-----------+----------------+-----------+-----------+-------------------+" << endl;
 }
 
 void optimizeInvestmentPortfolio(int totalRiskBudget)
@@ -1580,17 +1518,26 @@ void optimizeInvestmentPortfolio(int totalRiskBudget)
 
     cout << "\nInvestment Portfolio Optimization:\n"
          << endl;
+    cout << "+----------------+-------------------+--------------------+" << endl;
+    cout << left
+         << "| " << setw(15) << "Investment ID"
+         << "| " << setw(18) << "Units Selected"
+         << "| " << setw(19) << "Return (Rs.)"
+         << "|" << endl;
+    cout << "+----------------+-------------------+--------------------+" << endl;
     for (const auto &entry : selected)
     {
         int id = entry.first;
         int units = entry.second;
+        double ret = units * investments[id % 100 - 1].returnPerUnit;
 
-        cout << "Investment ID: " << id
-             << " | Units Selected: " << units
-             << " | Return: Rs." << fixed << setprecision(2)
-             << units * investments[id % 100 - 1].returnPerUnit << endl;
+        cout << left
+             << "| " << setw(15) << id
+             << "| " << setw(18) << units
+             << "| Rs. " << setw(15) << fixed << setprecision(2) << ret
+             << "|" << endl;
     }
-
+    cout << "+----------------+-------------------+--------------------+" << endl;
     cout << "\nTotal Expected Return: Rs." << fixed << setprecision(2) << totalReturn << endl;
 }
 void generateBudgetPlan(double monthlyIncome)
@@ -1634,7 +1581,6 @@ void encrypt(const string &inputFilename, const string &outputFilename, int key)
         cout << "Error opening files.\n";
         return;
     }
-
     char ch;
     while (input.get(ch))
     {
@@ -1649,7 +1595,6 @@ void encrypt(const string &inputFilename, const string &outputFilename, int key)
         }
         output.put(ch);
     }
-
     input.close();
     output.close();
     cout << "Encrypted " << inputFilename << "into " << outputFilename << endl;
@@ -1664,7 +1609,6 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
         cout << "Error opening files.\n";
         return;
     }
-
     char ch;
     while (input.get(ch))
     {
@@ -1679,7 +1623,6 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
         }
         output.put(ch);
     }
-
     input.close();
     output.close();
     cout << "Decrypted " << inputFilename << " into " << outputFilename << endl;
@@ -1688,125 +1631,102 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
 void menu()
 {
     int choice;
-
-    while (true)
+    do
     {
-        try
+        cout << "\nExpense Tracker Menu:";
+        cout << "\n1. Display Expenses";
+        cout << "\n2. Add Expense";
+        cout << "\n3. Update Expense";
+        cout << "\n4. Delete Expense";
+        cout << "\n5. Design A budget plan";
+        cout << "\n6. Allocate Emergency Funds";
+        cout << "\n7. Compress Data";
+        cout << "\n8. Decompress Data";
+        cout << "\n9. Optimize Savings";
+        cout << "\n10. Credit Card Payment Strategy";
+        cout << "\n11. Best Flight optimization";
+        cout << "\n12. Loan Repayment Strategy";
+        cout << "\n13. Investment Portfolio Optimization";
+        cout << "\n14. Encrypt CSV";
+        cout << "\n15. Decrypt CSV";
+        cout << "\n16. Exit";
+        cout << "\nEnter your choice: ";
+        cin >> choice;
+        string filename = "OctExpenses.csv";
+        string filename2 = "carddetails.csv";
+        string date;
+        vector<CreditCard> cardVec(4);
+        cardVec[1] = {"A", 3.5, 500, 15};
+        cardVec[2] = {"B", 2.0, 300, 12};
+        cardVec[3] = {"C", 1.5, 200, 18};
+        vector<PaymentResult> payVec;
+        vector<Loan> loans = {
+            Loan(1, 15000, 10.5),
+            Loan(2, 20000, 8.2),
+            Loan(3, 12000, 12.0)};
+        vector<LoanRepaymentResult> payVecLoan;
+        vector<Investment> investments;
+        vector<InvestmentSelection> result;
+        switch (choice)
         {
-            cout << "\nExpense Tracker Menu:";
-            cout << "\n1. Display Expenses";
-            cout << "\n2. Add Expense";
-            cout << "\n3. Update Expense";
-            cout << "\n4. Delete Expense";
-            cout << "\n5. Design A budget plan";
-            cout << "\n6. Allocate Emergency Funds";
-            cout << "\n7. Compress Data";
-            cout << "\n8. Decompress Data";
-            cout << "\n9. Optimize Savings";
-            cout << "\n10. Credit Card Payment Strategy";
-            cout << "\n11. Best Flight optimization";
-            cout << "\n12. Loan Repayment Strategy";
-            cout << "\n13. Investment Portfolio Optimization";
-            cout << "\n14. Encrypt CSV";
-            cout << "\n15. Decrypt CSV";
-            cout << "\n16. Exit";
-            cout << "\nEnter your choice: ";
-
-            cin >> choice;
-
-            // Validate input
-            if (cin.fail())
+        case 1:
+            displayExpenses();
+            Sleep(2000); // Sleep for 2 seconds
+            break;
+        case 2:
+            addExpense();
+            break;
+        case 3:
+            updateExpense();
+            break;
+        case 4:
+            displayExpenses();
+            cout << "Enter the date (YYYY-MM-DD) to delete all expenses of that day: ";
+            cin >> date;
+            if (deleteExpenses(filename, date) || deleteExpenses(filename2, date))
             {
-                throw invalid_argument("Input must be an integer.");
+                cout << "Expenses for date " << date << " have been deleted successfully.\n";
+                Sleep(2000);
             }
-
-            if (choice < 1 || choice > 16)
+            else
             {
-                throw out_of_range("Choice must be between 1 and 16.");
+                cout << "No expenses found for the entered date.\n";
             }
-
-            string filename = "OctExpenses.csv";
-            string filename2 = "carddetails.csv";
-            string date;
-            vector<CreditCard> cardVec(4);
-            cardVec[1] = {"A", 3.5, 500, 15};
-            cardVec[2] = {"B", 2.0, 300, 12};
-            cardVec[3] = {"C", 1.5, 200, 18};
-            vector<PaymentResult> payVec;
-            vector<Loan> loans = {
-                Loan(1, 15000, 10.5),
-                Loan(2, 20000, 8.2),
-                Loan(3, 12000, 12.0)};
-            vector<LoanRepaymentResult> payVecLoan;
-            vector<Investment> investments;
-            vector<InvestmentSelection> result;
-            switch (choice)
+            displayExpenses();
+            break;
+        case 5:
+        {
+            double income;
+            cout << "Enter your monthly income in Rupees: ";
+            cin >> income;
+            // Input validation
+            if (cin.fail() || income <= 0)
             {
-            case 1:
-                displayExpenses();
-                Sleep(2000); // Sleep for 2 seconds
-                break;
-            case 2:
-                addExpense();
-                break;
-            case 3:
-                updateExpense();
-                break;
-            case 4:
-                displayExpenses();
-                cout << "Enter the date (YYYY-MM-DD) to delete all expenses of that day: ";
-                cin >> date;
-
-                if (deleteExpenses(filename, date) || deleteExpenses(filename2, date))
-                {
-                    cout << "Expenses for date " << date << " have been deleted successfully.\n";
-                    Sleep(2000);
-                }
-                else
-                {
-                    cout << "No expenses found for the entered date.\n";
-                }
-                displayExpenses();
-
-                break;
-            case 5:
-            {
-                double income;
-                cout << "Enter your monthly income in Rupees: ";
-                cin >> income;
-
-                // Input validation
-                if (cin.fail() || income <= 0)
-                {
-                    cin.clear();                                         // Clear input flag
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
-                    cout << "Invalid income amount. Please enter a positive numeric value.\n";
-                    break;
-                }
-
-                cout << "\nGenerating your personalized budget plan...\n\n";
-                generateBudgetPlan(income);
-                Sleep(5000); // Delay to simulate processing
+                cin.clear();                                         // Clear input flag
+                cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
+                cout << "Invalid income amount. Please enter a positive numeric value.\n";
                 break;
             }
-
-            case 6:
-                allocateEmergencyFunds();
-                break;
-            case 7:
-                updateExpenseData();
-                Sleep(200);
-                break;
-            case 8:
-                restoreExpenseData();
-                Sleep(200);
-                break;
-            case 9:
-
-                int goal;
-                cout << "Enter your target savings goal: ";
-                cin >> goal;
-
+            cout << "\nGenerating your personalized budget plan...\n\n";
+            generateBudgetPlan(income);
+            Sleep(5000); // Delay to simulate processing
+            break;
+        }
+        case 6:
+            allocateEmergencyFunds();
+            break;
+        case 7:
+            updateExpenseData();
+            Sleep(200);
+            break;
+        case 8:
+            restoreExpenseData();
+            Sleep(200);
+            break;
+        case 9:
+            int goal;
+            cout << "Enter your target savings goal: ";
+            cin >> goal;
             cout << "\nWould you like to allow a small flexibility margin above your goal? (optional)\n";
             cout << "Enter the extra amount you are willing to accept (Enter 0 if you want an exact match): ";
             int excessAmount;
@@ -1825,76 +1745,84 @@ void menu()
             break;
         case 10:
 
-                cout << "Enter your available funds: " << endl;
-                int funds;
-                cin >> funds;
-                payVec = optimizeCreditCardPayments(expenseData, cardid, cardVec, funds);
-                displayResults(payVec);
+            cout << "Enter your available funds: ";
+            int funds;
+            cin >> funds;
+            payVec = optimizeCreditCardPayments(expenseData, cardid, cardVec, funds);
+            displayResults(payVec);
 
-                break;
-            case 11:
-                travelExpenseMinimizer(); // Call our feature here
-                break;
+            break;
+        case 11:
+            travelExpenseMinimizer(); // Call our feature here
+            break;
 
-            case 12:
-                cout << "Enter your income: ";
-                int income1;
-                cin >> income1;
-
-                cout << "Enter the month number (1 for January, 12 for December): ";
-                int month;
-                cin >> month;
-
-                if (month < 1 || month > 12)
-                {
-                    cout << "Invalid month entered. Please enter a value between 1 and 12." << endl;
-                    break;
-                }
-
-                payVecLoan = optimizeLoanRepayment(expenseData, income1, (month - 1), loans);
-                displayLoanResults(payVecLoan);
-                break;
-            case 13:
-                int riskBudget;
-                cout << "Enter your total risk budget: ";
-                cin >> riskBudget;
-                optimizeInvestmentPortfolio(riskBudget);
-                break;
-            case 14:
+        case 12:
+            cout << "Enter your income: ";
+            int income1;
+            cin >> income1;
+            // Input validation loop
+            if (cin.fail())
             {
-                int key;
-                cout << "Enter encryption key (positive integer): ";
-                cin >> key;
-                encrypt(filename, "encrypted_Expenses.csv", key);
-                encrypt(filename2, "encrypted_carddetails.csv", key);
-                break;
+                cin.clear();                                         // Clear the error flag
+                cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
+                cout << "Invalid input. Please enter a numeric value.\n";
+                break; // or break if inside switch-case
             }
-            case 15:
+
+            if (income1 <= 0)
             {
-                int key;
-                cout << "Enter decryption key (must match encryption key): ";
-                cin >> key;
-                decrypt("encrypted_Expenses.csv", "decrypted_Expenses.csv", key);
-                decrypt("encrypted_carddetails.csv", "decrypted_carddetails.csv", key);
+                cout << "Income must be a positive value.\n";
+                break; // or break if inside switch-case
+            }
+            cout << "Enter the month number (1 for January, 12 for December): ";
+            int month;
+            cin >> month;
+
+            if (month < 1 || month > 12)
+            {
+                cout << "Invalid month entered. Please enter a value between 1 and 12." << endl;
                 break;
             }
-            case 16:
-                cout << "Exiting program...\n";
-                return;
-            }
-        }
-        catch (const exception &e)
+
+            payVecLoan = optimizeLoanRepayment(expenseData, income1, (month - 1), loans);
+            displayLoanResults(payVecLoan);
+            break;
+        case 13:
+            int riskBudget;
+            cout << "Enter your total risk budget: ";
+            cin >> riskBudget;
+            optimizeInvestmentPortfolio(riskBudget);
+            break;
+        case 14:
         {
-            cin.clear();                                         // Clear error flag
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard input
-            cout << "Error: " << e.what() << "\nPlease try again.\n";
+            int key;
+            cout << "Enter encryption key (positive integer): ";
+            cin >> key;
+            encrypt(filename, "encrypted_Expenses.csv", key);
+            encrypt(filename2, "encrypted_carddetails.csv", key);
+            break;
         }
-    }
+        case 15:
+        {
+            int key;
+            cout << "Enter decryption key (must match encryption key): ";
+            cin >> key;
+            decrypt("encrypted_Expenses.csv", "decrypted_Expenses.csv", key);
+            decrypt("encrypted_carddetails.csv", "decrypted_carddetails.csv", key);
+            break;
+        }
+        case 16:
+            cout << "Exiting program...\n";
+            break;
+
+        default:
+            cout << "Invalid choice! Please enter a valid option.\n";
+        }
+    } while (choice != 16);
 }
 
 // Main function
 int main()
-
 {
     string filename1 = "OctExpenses.csv";
     string filename2 = "carddetails.csv";
@@ -1914,6 +1842,3 @@ int main()
     menu();
     return 0;
 }
-// 2024-10-09,200,250,600,300,250,500   #Fraudulent: Sudden high spending
-// 2024-10-10,300,400,1000,500,450,900  #Fraudulent: Extreme anomaly
-// 2024-10-11,250,300,800,400,350,700   #Fraudulent: Unusual high expense
