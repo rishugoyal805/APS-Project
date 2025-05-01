@@ -1014,7 +1014,7 @@ double optimizeSavings(int &goal)
     // }
 
     optimizeSavingsPlan(nonEssentialExpensesWithDates, goal);
-    menu();
+    
     return 0;
 }
 
@@ -2018,14 +2018,17 @@ void menu()
                 else
                     cout << "  - No flexibility allowed (exact goal only)\n";
 
-                cout << "\nAttempting optimization for *Exact Goal (Rs. " << goal << ")*...\n";
-                optimizeSavings(goal); // Call for exact match
+               
 
                 if (excessAmount > 0)
                 {
                     int finalGoal = goal + excessAmount;
                     cout << "\nAttempting optimization for *Flexible Goal (Up to Rs. " << finalGoal << ")*...\n";
                     optimizeSavings(finalGoal); // Call for flexible version
+                }
+                else{
+                    cout << "\nAttempting optimization for *Exact Goal (Rs. " << goal << ")*...\n";
+                    optimizeSavings(goal); // Call for exact match
                 }
 
                 break;
