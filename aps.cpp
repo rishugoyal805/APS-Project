@@ -1611,6 +1611,12 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
         availableFunds -= pay;
     }
 
+    cout << "Summary:\n";
+    cout << "The function optimizes loan repayments using a greedy strategy by distributing leftover income after expenses to loans with the highest interest-to-amount ratio. "
+         << "It ensures minimal interest accumulation by prioritizing high-density loans first. "
+         << "This is similar to greedy problems like those on LeetCode (e.g., Candy or Queue Reconstruction). "
+         << "The time complexity is O(m log m + 31n), where m is the number of loans.\n\n";
+
     return results;
 }
 
