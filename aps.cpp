@@ -1462,6 +1462,12 @@ void allocateEmergencyFunds()
     }
 
     cout << "Total Minimum Transfer Cost: Rs. " << totalCost << "\n";
+
+    cout << "Summary:\n";
+    cout << "The function 'allocateEmergencyFunds' models daily expenses as a graph and applies Kruskal's algorithm (greedy algorithm) to minimize the cost of transferring emergency funds over time. "
+         << "It treats each day as a node and connects consecutive days with edges weighted by the absolute difference in expense totals. "
+         << "This resembles classic MST problems on LeetCode like 1135 (Connecting Cities With Minimum Cost) and applies greedy and union-find techniques. "
+         << "The time complexity is approximately O(E log E + N), where E is the number of edges and N is the number of nodes.\n\n";
 }
 
 void buildHuffmanTree(const string &data, unordered_map<char, string> &huffmanCode)
@@ -1544,7 +1550,14 @@ void updateExpenseData()
     outFile.close();
 
     cout << "CSV data compressed to compress.csv!\n";
+
+    cout << "Summary:\n";
+    cout << "The function 'updateExpenseData' compresses CSV data using Huffman Encoding by building a frequency-based binary tree and replacing characters with shorter binary codes. "
+         << "It stores both the Huffman dictionary and the compressed bitstring to a new file. "
+         << "This is similar to LeetCode problems involving compression and encoding like 451 (Sort Characters by Frequency) and 271 (Encode and Decode Strings). "
+         << "The time complexity is O(n log n) due to the priority queue operations over n characters in the Huffman tree construction.\n\n";
 }
+
 void restoreExpenseData()
 {
     string compressFile = "compress.csv";
@@ -1581,6 +1594,12 @@ void restoreExpenseData()
     outFile.close();
 
     cout << "Data restored from compress.csv to decompress.csv\n";
+
+     cout << "Summary:\n";
+    cout << "The function 'restoreExpenseData' reads a Huffman-encoded CSV file, reconstructs the encoding map, and decodes the binary string back into original text. "
+         << "It uses a reverse lookup on the binary codes and writes the decompressed result into a new file. "
+         << "This process is conceptually related to decoding problems like LeetCode 271 (Encode and Decode Strings) or 5 (Longest Palindromic Substring, in terms of parsing). "
+         << "The time complexity is O(n), where n is the number of bits in the compressed data.\n\n";
 }
 
 void loadExpenseData(map<string, double> &expenses)
@@ -1836,6 +1855,11 @@ void encrypt(const string &inputFilename, const string &outputFilename, int key)
     input.close();
     output.close();
     cout << "Encrypted " << inputFilename << "into " << outputFilename << endl;
+    cout << "Summary:\n";
+    cout << "The function 'encrypt' reads a plaintext file and writes an encrypted version to another file using a Caesar cipher by shifting alphabetic and numeric characters forward by a key. "
+         << "It maintains case sensitivity and handles wrap-around with modular arithmetic for both letters and digits. "
+         << "This resembles LeetCode string manipulation problems like 1844 (Replace All Digits with Characters) or 709 (To Lower Case). "
+         << "The time complexity is O(n), where n is the number of characters in the input file.\n\n";
 }
 
 void decrypt(const string &inputFilename, const string &outputFilename, int key)
@@ -1866,6 +1890,11 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
     input.close();
     output.close();
     cout << "Decrypted " << inputFilename << " into " << outputFilename << endl;
+    cout << "Summary:\n";
+    cout << "The function 'decrypt' reads an encrypted file and writes the decrypted content to another file using a Caesar cipher reversal on letters and digits. "
+         << "It preserves case and handles wrap-around with modular arithmetic for both alphabets and numbers. "
+         << "This is similar to LeetCode problems involving string transformations, such as 2325 (Decode the Message) or 1528 (Shuffle String). "
+         << "The time complexity is O(n), where n is the number of characters in the input file.\n\n";
 }
 
 void menu()
