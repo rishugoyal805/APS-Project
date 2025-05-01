@@ -970,6 +970,34 @@ void optimizeSavingsPlan(vector<tuple<int, int, string>> &nonEssentialExpensesWi
     // Footer border
     cout << "+-----------+--------------+------------------+" << endl;
     cout << endl;
+
+
+    cout << "----------------------------------------------------------" << endl;
+cout << "FUNCTION SUMMARY: Savings Optimization from Non-Essential Expenses" << endl;
+cout << "----------------------------------------------------------" << endl;
+cout << "Purpose      : This module is used to guide users in identifying low-priority expenses that can be trimmed" << endl;
+cout << "               to meet savings targets with minimal lifestyle disruption." << endl;
+
+cout << endl;
+cout << "Core Logic   : Extracts all non-essential expenses with their amounts, dates, and categories." << endl;
+cout << "               Applies a variation of the 0/1 Knapsack Dynamic Programming algorithm to find" << endl;
+cout << "               the combination of expenses that maximizes savings <= goal using the fewest entries." << endl;
+cout << "               Tracks actual expense combinations to show which ones to eliminate." << endl;
+cout << endl;
+cout << "Similar To   : LeetCode Problem 416 - 'Partition Equal Subset Sum'" << endl;
+cout << "               and LeetCode 474 - 'Ones and Zeroes'," << endl;
+cout << "               where you're selecting a subset of items to meet a goal," << endl;
+cout << "               with an extra constraint (minimize number of items used)." << endl;
+
+cout << endl;
+cout << "Techniques   : Dynamic Programming, Knapsack Pattern, Path Reconstruction, Tuple Handling" << endl;
+cout << endl;
+cout << "Time Complexity : O(N * G)" << endl;
+cout << "                  where N = number of non-essential expenses," << endl;
+cout << "                        G = savings goal (treated as capacity)." << endl;
+cout << "----------------------------------------------------------" << endl;
+
+
 }
 
 double optimizeSavings(int &goal)
@@ -1133,6 +1161,10 @@ void displayResults(const vector<PaymentResult> &results)
 
     // Footer border
     cout << "+-----------+------------+-----------+-----------+-------------------+" << endl;
+
+   
+
+
 }
 
 int findMinTravelCost(
@@ -1207,65 +1239,167 @@ void printPath(const vector<int> &parent, int source, int destination, const vec
     cout << endl;
 }
 
+
 void travelExpenseMinimizer()
 {
-    int numCities, numFlights;
-    cout << "Enter number of cities: ";
-    cin >> numCities;
+    int numCities;
+    while (true)
+    {
+        cout << "Enter number of cities: ";
+        if (cin >> numCities && numCities > 1)
+            break;
+
+        cout << "Invalid input. Number of cities must be greater than 1.\n";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
 
     vector<City> cities(numCities);
     unordered_map<string, int> cityIndex;
-    string cityName;
-    int hotelCost;
 
-    cout << "Enter city names and hotel costs per night:\n";
+    cout << "\nEnter city names and hotel costs per night:\n";
     for (int i = 0; i < numCities; ++i)
     {
+        string cityName;
+        int hotelCost;
+
         cout << "City " << i + 1 << " name: ";
-        cin >> cityName;
-        cout << "Hotel cost per night in " << cityName << ": ";
-        cin >> hotelCost;
+        cin >> ws;
+        getline(cin, cityName);
+
+        while (true)
+        {
+            cout << "Hotel cost per night in " << cityName << ": ";
+            if (cin >> hotelCost && hotelCost >= 0)
+                break;
+
+            cout << "Please enter a valid non-negative number for hotel cost.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+
         cities[i] = {cityName, hotelCost};
         cityIndex[cityName] = i;
     }
 
-    vector<vector<ERoute>> graph(numCities);
-    cout << "Enter number of flight routes: ";
-    cin >> numFlights;
+    int numFlights;
+    while (true)
+    {
+        cout << "\nEnter number of flight routes: ";
+        if (cin >> numFlights && numFlights >= 1)
+            break;
 
+        cout << "Enter at least 1 valid flight route.\n";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    vector<vector<ERoute>> graph(numCities);
     for (int i = 0; i < numFlights; ++i)
     {
         string from, to;
         int cost;
+
+        cout << "\nFlight Route " << i + 1 << ":\n";
         cout << "From city: ";
-        cin >> from;
+        cin >> ws;
+        getline(cin, from);
         cout << "To city: ";
-        cin >> to;
-        cout << "Flight cost from " << from << " to " << to << ": ";
-        cin >> cost;
+        getline(cin, to);
+
+        if (cityIndex.find(from) == cityIndex.end() || cityIndex.find(to) == cityIndex.end())
+        {
+            cout << " Invalid city names. Please re-enter this flight route.\n";
+            --i;
+            continue;
+        }
+
+        while (true)
+        {
+            cout << "Flight cost from " << from << " to " << to << ": ";
+            if (cin >> cost && cost >= 0)
+                break;
+
+            cout << " Invalid cost. Please enter a non-negative number.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
 
         graph[cityIndex[from]].push_back({cityIndex[to], cost});
     }
 
     string src, dest;
-    int people, days;
-    cout << "Enter starting city: ";
-    cin >> src;
-    cout << "Enter destination city: ";
-    cin >> dest;
-    cout << "Enter number of travelers: ";
-    cin >> people;
-    cout << "Enter number of days to stay in each city: ";
-    cin >> days;
+    cout << "\n Enter starting city: ";
+    cin >> ws;
+    getline(cin, src);
+
+    cout << " Enter destination city: ";
+    getline(cin, dest);
+
+    if (cityIndex.find(src) == cityIndex.end() || cityIndex.find(dest) == cityIndex.end())
+    {
+        cout << " One or both cities are invalid.\n";
+        return;
+    }
+
+    int people;
+    while (true)
+    {
+        cout << " Enter number of travelers: ";
+        if (cin >> people && people > 0)
+            break;
+
+        cout << " Invalid number. Please enter a positive value.\n";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    int days;
+    while (true)
+    {
+        cout << " Enter number of days to stay in each city: ";
+        if (cin >> days && days > 0)
+            break;
+
+        cout << " Please enter a positive number of days.\n";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
 
     vector<int> parent;
     int totalCost = findMinTravelCost(cities, graph, cityIndex[src], cityIndex[dest], people, days, parent);
 
-    cout << "\nMinimum total cost from " << src << " to " << dest << " for "
-         << people << " people over " << days << " days is: Rs " << totalCost << endl;
+    cout << "\n Minimum total cost from " << src << " to " << dest
+         << " for " << people << " traveler(s) over " << days << " day(s) is: Rs " << totalCost << endl;
 
     printPath(parent, cityIndex[src], cityIndex[dest], cities);
+
+    cout<<endl;
+
+    cout << "\n----------------------------------------------------------\n";
+    cout << " FUNCTION SUMMARY: Travel Cost Optimization\n";
+    cout << "----------------------------------------------------------\n";
+    cout << " Purpose      : Calculates the minimum travel expense from a source city\n"
+         << "                 to a destination city for a group of people, factoring in\n"
+         << "                 flight costs and hotel stays using a modified Dijkstra's algorithm.\n\n";
+
+    cout << " Core Logic   : Builds a graph of cities and flights, where each step adds:\n"
+         << "                 • Flight cost (per person x total people)\n"
+         << "                 • Hotel cost (per night x days x people)\n\n";
+
+    cout << " Similar To   : LeetCode Problem 787 - 'Cheapest Flights Within K Stops'\n"
+         << "                 (but extended to handle hotel costs and people/day multipliers).\n\n";
+
+    cout << " Techniques   : Graphs, Greedy Algorithms, Dijkstra's Algorithm, Priority Queue,\n"
+         << "                 Path Reconstruction\n\n";
+
+    cout << " Time Complexity : O(E x log V)\n"
+         << "                    where V = number of cities, E = number of flight routes.\n";
+
+    cout << "----------------------------------------------------------\n";
+    
 }
+
 
 void initializeDisjointSet(int n)
 {
@@ -1959,15 +2093,95 @@ void menu()
 
                 break;
             }
+            // case 10:
+
+            //     // cout << "Enter your available funds: " << endl;
+            //     // int funds;
+            //     // cin >> funds;
+            //     // payVec = optimizeCreditCardPayments(expenseData, cardid, cardVec, funds);
+            //     // displayResults(payVec);
+            //     int funds;
+            //     while (true)
+            //     {
+            //         cout << "💰 Enter your available funds for credit card payments (in Rs): ";
+            //         if (cin >> funds && funds >= 0)
+            //             break;
+
+            //         cout << " Invalid input. Please enter a non-negative numeric value.\n";
+            //         cin.clear();
+            //         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            //     }
+
+            //     vector<PaymentResult> pay = optimizeCreditCardPayments(expenseData, cardid, cardVec, funds);
+            //     displayResults(pay);
+
+
+            //     break;
             case 10:
+                    {
+                        int funds;
+                        while (true)
+                        {
+                            cout << "Enter your available funds for credit card payments (in Rs): ";
+                            if (cin >> funds && funds >= 0)
+                                break;
 
-                cout << "Enter your available funds: " << endl;
-                int funds;
-                cin >> funds;
-                payVec = optimizeCreditCardPayments(expenseData, cardid, cardVec, funds);
-                displayResults(payVec);
+                            cout << "Invalid input. Please enter a non-negative numeric value.\n";
+                            cin.clear();
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        }
 
-                break;
+                        vector<PaymentResult> payVec = optimizeCreditCardPayments(expenseData, cardid, cardVec, funds);
+                        displayResults(payVec);
+
+                        double maxInterest = 0;
+                        string maxCard;
+                        for (const auto &r : payVec)
+                        {
+                            if (r.interest > maxInterest)
+                            {
+                                maxInterest = r.interest;
+                                maxCard = r.card;
+                            }
+                        }
+
+                        if (maxInterest > 0)
+                        {
+                            cout << "\n Strategy Suggestion: Prioritize clearing dues on card '" << maxCard
+                                << "' to reduce the highest incurred interest of Rs. " << fixed << setprecision(2) << maxInterest << ".\n";
+                        }
+                        else
+                        {
+                            cout << "\n Great job! All dues are covered — no interest will be incurred.\n";
+                        }
+                        cout<<endl;
+                        cout<<endl;
+                        cout << "----------------------------------------------------------" << endl;
+                        cout << "FUNCTION SUMMARY: Credit Card Payment Optimization" << endl;
+                        cout << "----------------------------------------------------------" << endl;
+                        cout << "Purpose      : Calculates the optimal payment distribution across multiple credit cards" << endl;
+                        cout << "               to minimize interest costs by prioritizing payments based on dues and interest rates." << endl;
+                        cout << endl;
+                        cout << "Core Logic   : Processes expenses for each month and day, calculates the total dues for each card," << endl;
+                        cout << "               then allocates available funds starting with the minimum dues, followed by paying off" << endl;
+                        cout << "               higher-interest cards with any remaining funds." << endl;
+                        cout << "               The results include total due, paid amounts, unpaid balances, and the incurred interest." << endl;
+                        cout << endl;
+                        cout << "Similar To   : LeetCode Problem 134 - 'Gas Station'" << endl;
+                        cout << "               (where you distribute limited resources optimally)," << endl;
+                        cout << "               and debt repayment strategies from financial planning applications." << endl;
+                        cout << "               Also relates to greedy prioritization like in LeetCode 621 - 'Task Scheduler'." << endl;
+                        
+                        cout << endl;
+                        cout << "Techniques   : Greedy Algorithms, Sorting, Priority Queues, Path Reconstruction" << endl;
+                        cout << endl;
+                        cout << "Time Complexity : O(M * N + 3 log 3 + 3 log 3)" << endl;
+                        cout << "                  where M = number of months, N = number of days, and sorting 3 credit cards is constant." << endl;
+                        cout << "----------------------------------------------------------" << endl;
+
+                        break;
+                    }
+
             case 11:
                 travelExpenseMinimizer(); // Call our feature here
                 break;
