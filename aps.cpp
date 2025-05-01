@@ -1855,11 +1855,7 @@ void encrypt(const string &inputFilename, const string &outputFilename, int key)
     input.close();
     output.close();
     cout << "Encrypted " << inputFilename << "into " << outputFilename << endl;
-    cout << "Summary:\n";
-    cout << "The function 'encrypt' reads a plaintext file and writes an encrypted version to another file using a Caesar cipher by shifting alphabetic and numeric characters forward by a key. "
-         << "It maintains case sensitivity and handles wrap-around with modular arithmetic for both letters and digits. "
-         << "This resembles LeetCode string manipulation problems like 1844 (Replace All Digits with Characters) or 709 (To Lower Case). "
-         << "The time complexity is O(n), where n is the number of characters in the input file.\n\n";
+    
 }
 
 void decrypt(const string &inputFilename, const string &outputFilename, int key)
@@ -1890,11 +1886,7 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
     input.close();
     output.close();
     cout << "Decrypted " << inputFilename << " into " << outputFilename << endl;
-    cout << "Summary:\n";
-    cout << "The function 'decrypt' reads an encrypted file and writes the decrypted content to another file using a Caesar cipher reversal on letters and digits. "
-         << "It preserves case and handles wrap-around with modular arithmetic for both alphabets and numbers. "
-         << "This is similar to LeetCode problems involving string transformations, such as 2325 (Decode the Message) or 1528 (Shuffle String). "
-         << "The time complexity is O(n), where n is the number of characters in the input file.\n\n";
+    
 }
 
 void menu()
@@ -2008,6 +2000,7 @@ void menu()
 
             case 6:
                 allocateEmergencyFunds();
+                Sleep(200);
                 break;
             case 7:
                 updateExpenseData();
@@ -2183,6 +2176,14 @@ void menu()
                 cin >> key;
                 encrypt(filename, "encrypted_Expenses.csv", key);
                 encrypt(filename2, "encrypted_carddetails.csv", key);
+
+                cout << "Summary:\n";
+                cout << "The function 'encrypt' reads a plaintext file and writes an encrypted version to another file using a Caesar cipher by shifting alphabetic and numeric characters forward by a key. "
+                     << "It maintains case sensitivity and handles wrap-around with modular arithmetic for both letters and digits. "
+                     << "This resembles LeetCode string manipulation problems like 1844 (Replace All Digits with Characters) or 709 (To Lower Case). "
+                    << "The time complexity is O(n), where n is the number of characters in the input file.\n\n";
+                
+                Sleep(200);
                 break;
             }
             case 15:
@@ -2192,6 +2193,14 @@ void menu()
                 cin >> key;
                 decrypt("encrypted_Expenses.csv", "decrypted_Expenses.csv", key);
                 decrypt("encrypted_carddetails.csv", "decrypted_carddetails.csv", key);
+
+                cout << "Summary:\n";
+                cout << "The function 'decrypt' reads an encrypted file and writes the decrypted content to another file using a Caesar cipher reversal on letters and digits. "
+                     << "It preserves case and handles wrap-around with modular arithmetic for both alphabets and numbers. "
+                     << "This is similar to LeetCode problems involving string transformations, such as 2325 (Decode the Message) or 1528 (Shuffle String). "
+                     << "The time complexity is O(n), where n is the number of characters in the input file.\n\n";
+
+                Sleep(200);
                 break;
             }
             case 16:
