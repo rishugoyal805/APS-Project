@@ -546,6 +546,11 @@ void addExpense()
         cout << "Error opening file.\n";
     }
     file1.close();
+    cout << "Summary:\n";
+    cout << "The function 'addExpense()' allows users to log daily essential and non-essential expenses by entering amounts and selecting the payment card used. "
+         << "It validates the date format, prevents duplicate entries, stores data in structured maps, updates a 2D vector, and appends the data to CSV files. "
+         << "This logic is comparable to LeetCode problems involving input validation, hashmap usage, and matrix data handling (e.g., Insert Delete GetRandom O(1)). "
+         << "It uses concepts from date parsing, maps, vectors, file handling, and error checking. Time complexity is roughly O(n), where n is the number of categories.\n\n";
 }
 
 void updateExpense()
@@ -752,6 +757,11 @@ void updateExpense()
         cout << "Expense not found in the data structure!" << endl;
     }
     displayExpenses();
+    cout << "Summary:\n";
+    cout << "The function 'updateExpense' allows a user to update a specific category of daily expenses for a given date, validating inputs and modifying both in-memory and CSV-stored data accordingly. "
+         << "It combines file I/O handling, data structure traversal, and user input validation. "
+         << "This approach is similar to LeetCode problems like 'Edit Distance in a Matrix' where data updates must maintain consistency. "
+         << "Key topics include file handling, 2D vector manipulation, string parsing, and input validation, with an overall time complexity of O(n) where n is the number of lines in the CSV file.\n\n";
 }
 
 // Function to delete expenses for a given date
@@ -871,6 +881,11 @@ bool deleteExpenses(string &filename, string &date)
         return false;
     }
     displayExpenses();
+    cout << "Summary:\n";
+    cout << "The function `deleteExpenses` removes all expense data for a specified date from both memory and a CSV file. "
+         << "It first parses the date, validates it, clears the corresponding in-memory entries, then rewrites the CSV without that date's entry. "
+         << "This resembles LeetCode file-handling or string-parsing problems like 'Delete Operation for Two Strings'. "
+         << "It uses topics like file I/O, error handling, date parsing, and string manipulation. Time complexity is O(n), where n is the number of lines in the file.\n\n";
 }
 void menu();
 void optimizeSavingsPlan(vector<tuple<int, int, string>> &nonEssentialExpensesWithDates, int &goal)
@@ -976,7 +991,6 @@ void optimizeSavingsPlan(vector<tuple<int, int, string>> &nonEssentialExpensesWi
          << "using a variation of the 0/1 Knapsack algorithm to maximize savings while minimizing the number of eliminated expenses.\n"
          << "This is similar to LeetCode Problem 416 ('Partition Equal Subset Sum') with the added constraint of minimizing the number of items used.\n"
          << "The time complexity is O(N * G), where N is the number of expenses and G is the savings goal (treated as capacity).\n\n";
-    
 }
 
 double optimizeSavings(int &goal)
@@ -1014,7 +1028,12 @@ double optimizeSavings(int &goal)
     // }
 
     optimizeSavingsPlan(nonEssentialExpensesWithDates, goal);
-    
+    cout << "Summary:\n";
+    cout << "The function analyzes daily non-essential expenses and uses a dynamic programming approach to suggest optimal reductions \n"
+         << "that help achieve a user-defined savings goal with minimal sacrifices. It selects a subset of expenses that maximize savings \n"
+         << "and minimize the number of items removed using a 0/1 Knapsack strategy. This is similar to LeetCode Problem 416 (Partition Equal Subset Sum), \n"
+         << "and involves topics like dynamic programming and subset optimization. The time complexity is O(N * G), where N is the number of expenses and G is the goal.\n\n";
+
     return 0;
 }
 
@@ -1224,20 +1243,20 @@ void travelExpenseMinimizer()
             break;
         cout << "Invalid input. Number of cities must be greater than 1.\n";
     }
-    
+
     vector<City> cities(numCities);
     unordered_map<string, int> cityIndex;
-    
+
     cout << "\nEnter city names and hotel costs per night:\n";
     for (int i = 0; i < numCities; ++i)
     {
         string cityName;
         int hotelCost;
-    
+
         cout << "City " << i + 1 << " name: ";
         cin >> ws;
         getline(cin, cityName);
-    
+
         while (true)
         {
             cout << "Hotel cost per night in " << cityName << ": ";
@@ -1245,11 +1264,11 @@ void travelExpenseMinimizer()
                 break;
             cout << "Please enter a valid non-negative number for hotel cost.\n";
         }
-    
+
         cities[i] = {cityName, hotelCost};
         cityIndex[cityName] = i;
     }
-    
+
     int numFlights;
     while (true)
     {
@@ -1258,27 +1277,27 @@ void travelExpenseMinimizer()
             break;
         cout << "Enter at least 1 valid flight route.\n";
     }
-    
+
     vector<vector<ERoute>> graph(numCities);
     for (int i = 0; i < numFlights; ++i)
     {
         string from, to;
         int cost;
-    
+
         cout << "\nFlight Route " << i + 1 << ":\n";
         cout << "From city: ";
         cin >> ws;
         getline(cin, from);
         cout << "To city: ";
         getline(cin, to);
-    
+
         if (cityIndex.find(from) == cityIndex.end() || cityIndex.find(to) == cityIndex.end())
         {
             cout << " Invalid city names. Please re-enter this flight route.\n";
             --i;
             continue;
         }
-    
+
         while (true)
         {
             cout << "Flight cost from " << from << " to " << to << ": ";
@@ -1286,24 +1305,24 @@ void travelExpenseMinimizer()
                 break;
             cout << "Invalid cost. Please enter a non-negative number.\n";
         }
-    
+
         graph[cityIndex[from]].push_back({cityIndex[to], cost});
     }
-    
+
     string src, dest;
     cout << "\nEnter starting city: ";
     cin >> ws;
     getline(cin, src);
-    
+
     cout << "Enter destination city: ";
     getline(cin, dest);
-    
+
     if (cityIndex.find(src) == cityIndex.end() || cityIndex.find(dest) == cityIndex.end())
     {
         cout << "One or both cities are invalid.\n";
         return;
     }
-    
+
     int people;
     while (true)
     {
@@ -1312,7 +1331,7 @@ void travelExpenseMinimizer()
             break;
         cout << "Invalid number. Please enter a positive value.\n";
     }
-    
+
     int days;
     while (true)
     {
@@ -1321,22 +1340,16 @@ void travelExpenseMinimizer()
             break;
         cout << "Please enter a positive number of days.\n";
     }
-    
+
     vector<int> parent;
     int totalCost = findMinTravelCost(cities, graph, cityIndex[src], cityIndex[dest], people, days, parent);
-    
+
     cout << "\nMinimum total cost from " << src << " to " << dest
          << " for " << people << " traveler(s) over " << days << " day(s) is: Rs " << totalCost << endl;
-    
+
     printPath(parent, cityIndex[src], cityIndex[dest], cities);
     cout << endl;
-    cout<< endl;
-    cout << "Summary:\n";
-    cout << "The function calculates the minimum travel cost using Dijkstra's algorithm, factoring in flight and hotel costs for a group. \n"
-         << "It uses a greedy approach, prioritizing flights and hotel stays while ensuring optimal travel cost calculation.\n"
-         << "This is similar to problems like LeetCode Problem 787, but extended to include hotel costs.\n"
-         << "The time complexity is O(E x log V), where V is the number of cities and E is the number of flight routes.\n\n";
-    
+    cout << endl;
 }
 
 void initializeDisjointSet(int n)
@@ -1595,7 +1608,7 @@ void restoreExpenseData()
 
     cout << "Data restored from compress.csv to decompress.csv\n";
 
-     cout << "Summary:\n";
+    cout << "Summary:\n";
     cout << "The function 'restoreExpenseData' reads a Huffman-encoded CSV file, reconstructs the encoding map, and decodes the binary string back into original text. "
          << "It uses a reverse lookup on the binary codes and writes the decompressed result into a new file. "
          << "This process is conceptually related to decoding problems like LeetCode 271 (Encode and Decode Strings) or 5 (Longest Palindromic Substring, in terms of parsing). "
@@ -1701,13 +1714,6 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
 
         availableFunds -= pay;
     }
-
-    cout << "Summary:\n";
-    cout << "The function optimizes loan repayments using a greedy strategy by distributing leftover income after expenses to loans with the highest interest-to-amount ratio. "
-         << "It ensures minimal interest accumulation by prioritizing high-density loans first. "
-         << "This is similar to greedy problems like those on LeetCode (e.g., Candy or Queue Reconstruction). "
-         << "The time complexity is O(m log m + 31n), where m is the number of loans.\n\n";
-
     return results;
 }
 
@@ -1793,6 +1799,12 @@ void optimizeInvestmentPortfolio(int totalRiskBudget)
     }
     cout << "+----------------+-------------------+--------------------+" << endl;
     cout << "\nTotal Expected Return: Rs." << fixed << setprecision(2) << totalReturn << endl;
+
+    cout << "Summary:\n";
+    cout << "The function optimizes investment selections by using a greedy strategy to choose investments with the highest return-to-risk ratio within a given total risk budget. "
+         << "It allocates the budget across available options to maximize total return, selecting as many units as allowed by the risk constraint. "
+         << "This is conceptually similar to the Fractional Knapsack problem on LeetCode, where items with the highest value-to-weight ratio are prioritized. "
+         << "The topics used include Greedy Algorithms and Sorting, and the time complexity is O(n log n), where n is the number of investments.\n\n";
 }
 
 void generateBudgetPlan(double monthlyIncome)
@@ -1826,6 +1838,12 @@ void generateBudgetPlan(double monthlyIncome)
 
     cout << "\n TOTAL: " << monthlyIncome << " distributed across needs, wants, savings, and others.\n"
          << endl;
+
+    cout << "Summary:\n";
+    cout << "The function 'generateBudgetPlan' categorizes a user's monthly income into Needs, Wants, Savings + Investments, and Others based on fixed percentages. "
+         << "It calculates and displays each category and sub-category with exact monetary allocations using standard financial budgeting principles. "
+         << "This resembles budget allocation logic seen in greedy algorithms on LeetCode, such as 'Assign Cookies' or 'Task Scheduler'. "
+         << "The topics include greedy strategy and basic arithmetic, with time complexity O(1) since all operations are constant time.\n\n";
 }
 void encrypt(const string &inputFilename, const string &outputFilename, int key)
 {
@@ -1855,7 +1873,6 @@ void encrypt(const string &inputFilename, const string &outputFilename, int key)
     input.close();
     output.close();
     cout << "Encrypted " << inputFilename << "into " << outputFilename << endl;
-    
 }
 
 void decrypt(const string &inputFilename, const string &outputFilename, int key)
@@ -1886,7 +1903,6 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
     input.close();
     output.close();
     cout << "Decrypted " << inputFilename << " into " << outputFilename << endl;
-    
 }
 
 void menu()
@@ -2040,15 +2056,14 @@ void menu()
                 else
                     cout << "  - No flexibility allowed (exact goal only)\n";
 
-               
-
                 if (excessAmount > 0)
                 {
                     int finalGoal = goal + excessAmount;
                     cout << "\nAttempting optimization for *Flexible Goal (Up to Rs. " << finalGoal << ")*...\n";
                     optimizeSavings(finalGoal); // Call for flexible version
                 }
-                else{
+                else
+                {
                     cout << "\nAttempting optimization for *Exact Goal (Rs. " << goal << ")*...\n";
                     optimizeSavings(goal); // Call for exact match
                 }
@@ -2087,13 +2102,13 @@ void menu()
                     cout << "Enter your available funds for credit card payments (in Rs): ";
                     if (isValidIntInput(funds))
                         break;
-                
+
                     cout << "Invalid input. Please enter a non-negative numeric value.\n";
                 }
-                
+
                 vector<PaymentResult> payVec = optimizeCreditCardPayments(expenseData, cardid, cardVec, funds);
                 displayResults(payVec);
-                
+
                 double maxInterest = 0;
                 string maxCard;
                 for (const auto &r : payVec)
@@ -2104,7 +2119,7 @@ void menu()
                         maxCard = r.card;
                     }
                 }
-                
+
                 if (maxInterest > 0)
                 {
                     cout << "\nStrategy Suggestion: Prioritize clearing dues on card '" << maxCard
@@ -2114,7 +2129,7 @@ void menu()
                 {
                     cout << "\nGreat job! All dues are covered — no interest will be incurred.\n";
                 }
-                
+
                 cout << endl;
                 cout << endl;
                 cout << "Summary:\n";
@@ -2122,14 +2137,17 @@ void menu()
                      << "allocating funds to minimize interest accumulation.\n"
                      << "This is similar to LeetCode Problem 134 ('Gas Station') and strategies for debt repayment.\n"
                      << "The time complexity is O(M * N + 3 log 3 + 3 log 3), where M is the number of months, and N is the number of days.\n\n";
-                
-                
 
                 break;
             }
 
             case 11:
                 travelExpenseMinimizer(); // Call our feature here
+                cout << "Summary:\n";
+                cout << "The function calculates the minimum travel cost using Dijkstra's algorithm, factoring in flight and hotel costs for a group. \n"
+                     << "It uses a greedy approach, prioritizing flights and hotel stays while ensuring optimal travel cost calculation.\n"
+                     << "This is similar to problems like LeetCode Problem 787, but extended to include hotel costs.\n"
+                     << "The time complexity is O(E x log V), where V is the number of cities and E is the number of flight routes.\n\n";
                 break;
 
             case 12:
@@ -2162,12 +2180,23 @@ void menu()
 
                 payVecLoan = optimizeLoanRepayment(expenseData, income1, (month - 1), loans);
                 displayLoanResults(payVecLoan);
+                cout << "Summary:\n";
+                cout << "The function optimizes loan repayments using a greedy strategy by distributing leftover income after expenses to loans with the highest interest-to-amount ratio. "
+                     << "It ensures minimal interest accumulation by prioritizing high-density loans first. "
+                     << "This is similar to greedy problems like those on LeetCode (e.g., Candy or Queue Reconstruction). "
+                     << "The time complexity is O(m log m + 31n), where m is the number of loans.\n\n";
                 break;
             case 13:
                 int riskBudget;
                 cout << "Enter your total risk budget: ";
                 cin >> riskBudget;
                 optimizeInvestmentPortfolio(riskBudget);
+                cout << "Summary:\n";
+                cout << "The function optimizes investment selections by using a greedy strategy to choose investments with the highest return-to-risk ratio within a given total risk budget. "
+                     << "It allocates the budget across available options to maximize total return, selecting as many units as allowed by the risk constraint. "
+                     << "This is conceptually similar to the Fractional Knapsack problem on LeetCode, where items with the highest value-to-weight ratio are prioritized. "
+                     << "The topics used include Greedy Algorithms and Sorting, and the time complexity is O(n log n), where n is the number of investments.\n\n";
+
                 break;
             case 14:
             {
@@ -2181,8 +2210,7 @@ void menu()
                 cout << "The function 'encrypt' reads a plaintext file and writes an encrypted version to another file using a Caesar cipher by shifting alphabetic and numeric characters forward by a key. "
                      << "It maintains case sensitivity and handles wrap-around with modular arithmetic for both letters and digits. "
                      << "This resembles LeetCode string manipulation problems like 1844 (Replace All Digits with Characters) or 709 (To Lower Case). "
-                    << "The time complexity is O(n), where n is the number of characters in the input file.\n\n";
-                
+                     << "The time complexity is O(n), where n is the number of characters in the input file.\n\n";
                 Sleep(200);
                 break;
             }
