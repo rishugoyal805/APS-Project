@@ -24,20 +24,23 @@
 #include <limits>
 
 using namespace std;
-struct City
+class City
 {
+public:
     string name;
     int hotelCostPerNight;
 };
 
-struct ERoute
+class ERoute
 {
+public:
     int destination;
     int flightCost;
 };
 
-struct CNode
+class CNode
 {
+public:
     int city;
     int cost;
     bool operator>(const CNode &other) const
@@ -79,11 +82,62 @@ public:
     double amount;
 };
 
+// For Rent vs Buy Simulator
+class RentBuyInput
+{
+public:
+    double income;
+    double rentCost;
+    double emi;
+    double propertyCost;
+    int years;
+};
+
+class RentBuyResult
+{
+public:
+    double totalRentCost;
+    double totalBuyCost;
+    string recommendation; // "Rent" or "Buy"
+};
+
+// For Inventory Optimization
+class Product
+{
+public:
+    int size;
+    int profit;
+    int stock;
+};
+
+class InventoryResult
+{
+public:
+    int totalProfit;
+    vector<int> selectedProductIndices;
+};
+
+// For Recurring Expense Scheduler
+class RecurringBill
+{
+public:
+    string name;
+    int amount;
+    int dueDate; // 1 to 31
+    int penalty; // penalty for late payment
+};
+
+class SchedulerResult
+{
+public:
+    vector<string> paymentSchedule;
+    double totalPenaltyPaid;
+};
+
 vector<vector<pair<vector<int>, vector<int>>>> expenseData(12, vector<pair<vector<int>, vector<int>>>(31, {{0, 0, 0}, {0, 0, 0}}));
 vector<vector<pair<vector<int>, vector<int>>>> cardid(12, vector<pair<vector<int>, vector<int>>>(31, {{0, 0, 0}, {0, 0, 0}}));
 vector<string> essentialCategories = {"food", "work", "travel"};
 vector<string> nonEssentialCategories = {"snacks", "fun", "extra"};
-
 
 // Store expense data: date → category → list of expenses
 // map<string, map<string, vector<Expense>>> expenseData;
@@ -180,7 +234,12 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
     int month,
     vector<Loan> &loans);
 
-    // Caesar Cipher encryption and decryption
-void encrypt(const string& inputFilename, const string& outputFilename, int key);
-void decrypt(const string& inputFilename, const string& outputFilename, int key);
+// Caesar Cipher encryption and decryption
+void encrypt(const string &inputFilename, const string &outputFilename, int key);
+void decrypt(const string &inputFilename, const string &outputFilename, int key);
+
+RentBuyResult rentVsBuyDecision(const RentBuyInput& input);
+InventoryResult optimizeInventory(const vector<Product>& products, int capacity);
+SchedulerResult scheduleRecurringExpenses(const vector<RecurringBill>& bills, int income);
+
 #endif
