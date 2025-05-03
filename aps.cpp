@@ -1799,12 +1799,6 @@ void optimizeInvestmentPortfolio(int totalRiskBudget)
     }
     cout << "+----------------+-------------------+--------------------+" << endl;
     cout << "\nTotal Expected Return: Rs." << fixed << setprecision(2) << totalReturn << endl;
-
-    cout << "Summary:\n";
-    cout << "The function optimizes investment selections by using a greedy strategy to choose investments with the highest return-to-risk ratio within a given total risk budget. "
-         << "It allocates the budget across available options to maximize total return, selecting as many units as allowed by the risk constraint. "
-         << "This is conceptually similar to the Fractional Knapsack problem on LeetCode, where items with the highest value-to-weight ratio are prioritized. "
-         << "The topics used include Greedy Algorithms and Sorting, and the time complexity is O(n log n), where n is the number of investments.\n\n";
 }
 
 void generateBudgetPlan(double monthlyIncome)
@@ -1841,9 +1835,7 @@ void generateBudgetPlan(double monthlyIncome)
 
     cout << "Summary:\n";
     cout << "The function 'generateBudgetPlan' categorizes a user's monthly income into Needs, Wants, Savings + Investments, and Others based on fixed percentages. "
-         << "It calculates and displays each category and sub-category with exact monetary allocations using standard financial budgeting principles. "
-         << "This resembles budget allocation logic seen in greedy algorithms on LeetCode, such as 'Assign Cookies' or 'Task Scheduler'. "
-         << "The topics include greedy strategy and basic arithmetic, with time complexity O(1) since all operations are constant time.\n\n";
+         << "It calculates and displays each category and sub-category with exact monetary allocations using standard financial budgeting principles. \n\n";
 }
 void encrypt(const string &inputFilename, const string &outputFilename, int key)
 {
@@ -2035,11 +2027,17 @@ void runInventoryOptimizer()
     }
 
     vector<Product> products;
-    // Assume reading from file is done; here we hardcode some values for demo
+    // Assume reading from file is done; here we hardcode some values for demonstration
     products.push_back({4, 40, 10});
     products.push_back({3, 30, 8});
     products.push_back({2, 20, 6});
     products.push_back({1, 10, 12});
+    products.push_back({5, 50, 15});
+    products.push_back({6, 60, 20});
+    products.push_back({7, 70, 25});
+    products.push_back({8, 80, 30});
+    products.push_back({9, 90, 35});
+    products.push_back({10, 100, 40});
 
     InventoryResult result = optimizeInventory(products, capacity);
 
@@ -2306,7 +2304,7 @@ void menu()
                 }
                 else
                 {
-                    cout << "\nGreat job! All dues are covered — no interest will be incurred.\n";
+                    cout << "\nGreat job! All dues are covered  no interest will be incurred.\n";
                 }
 
                 cout << endl;
@@ -2316,7 +2314,6 @@ void menu()
                      << "allocating funds to minimize interest accumulation.\n"
                      << "This is similar to LeetCode Problem 134 ('Gas Station') and strategies for debt repayment.\n"
                      << "The time complexity is O(M * N + 3 log 3 + 3 log 3), where M is the number of months, and N is the number of days.\n\n";
-
                 break;
             }
 
