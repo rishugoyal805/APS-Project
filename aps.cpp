@@ -1905,6 +1905,182 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
     cout << "Decrypted " << inputFilename << " into " << outputFilename << endl;
 }
 
+RentBuyResult rentVsBuyDecision(const RentBuyInput &input)
+{
+    RentBuyResult result;
+    result.totalRentCost = input.rentCost * 12 * input.years;
+
+    double emiTotal = input.emi * 12 * input.years;
+    double maintenance = 0.01 * input.propertyCost * input.years; // Assume 1% maintenance
+    result.totalBuyCost = emiTotal + maintenance;
+
+    result.recommendation = (result.totalBuyCost < result.totalRentCost) ? "Buy" : "Rent";
+    return result;
+}
+
+InventoryResult optimizeInventory(const vector<Product> &products, int capacity)
+{
+    int n = products.size();
+    vector<vector<int>> dp(n + 1, vector<int>(capacity + 1, 0));
+    vector<vector<bool>> taken(n + 1, vector<bool>(capacity + 1, false));
+
+    for (int i = 1; i <= n; ++i)
+    {
+        const Product &p = products[i - 1];
+        for (int c = 0; c <= capacity; ++c)
+        {
+            dp[i][c] = dp[i - 1][c];
+            if (p.size <= c)
+            {
+                int newProfit = dp[i - 1][c - p.size] + p.profit;
+                if (newProfit > dp[i][c])
+                {
+                    dp[i][c] = newProfit;
+                    taken[i][c] = true;
+                }
+            }
+        }
+    }
+
+    InventoryResult result;
+    result.totalProfit = dp[n][capacity];
+    int c = capacity;
+    for (int i = n; i >= 1; --i)
+    {
+        if (taken[i][c])
+        {
+            result.selectedProductIndices.push_back(i - 1);
+            c -= products[i - 1].size;
+        }
+    }
+    return result;
+}
+
+SchedulerResult scheduleRecurringExpenses(const vector<RecurringBill> &bills, int income)
+{
+    vector<RecurringBill> sorted = bills;
+    sort(sorted.begin(), sorted.end(), [](const RecurringBill &a, const RecurringBill &b)
+         {
+             return a.penalty > b.penalty; // Greedy: pay highest penalty first
+         });
+
+    int remaining = income;
+    SchedulerResult result;
+
+    for (const auto &bill : sorted)
+    {
+        if (bill.amount <= remaining)
+        {
+            result.paymentSchedule.push_back("Paid: " + bill.name);
+            remaining -= bill.amount;
+        }
+        else
+        {
+            result.paymentSchedule.push_back("Unpaid: " + bill.name + " (Penalty: " + to_string(bill.penalty) + ")");
+            result.totalPenaltyPaid += bill.penalty;
+        }
+    }
+    return result;
+}
+
+void runRentVsBuySimulator()
+{
+    RentBuyInput input;
+    cout << "Enter monthly income: ";
+    if (!isValidDoubleInput(input.income))
+    {
+        cout << "Invalid amount entered! Please enter a correct income value.\n";
+        return;
+    }
+    cout << "Enter monthly rent cost: ";
+    if (!isValidDoubleInput(input.rentCost))
+    {
+        cout << "Invalid amount entered! Please enter a valid Cost of the Rent.\n";
+        return;
+    }
+    cout << "Enter home loan EMI: ";
+    if (!isValidDoubleInput(input.emi))
+    {
+        cout << "Invalid amount entered! Please enter a valid EMI value.\n";
+        return;
+    }
+    cout << "Enter total property cost: ";
+    if (!isValidDoubleInput(input.propertyCost))
+    {
+        cout << "Invalid amount entered! Please enter a valid Property cost.\n";
+        return;
+    }
+    cout << "Enter years of stay: ";
+    if (!isValidIntInput(input.years))
+    {
+        cout << "Invalid input! Please enter a valid year.\n";
+        return;
+    }
+    RentBuyResult result = rentVsBuyDecision(input);
+
+    cout << "\n--- Rent vs Buy Analysis ---\n";
+    cout << "Total cost if Renting: " << result.totalRentCost << endl;
+    cout << "Total cost if Buying: " << result.totalBuyCost << endl;
+    cout << "Recommendation: " << result.recommendation << endl;
+}
+
+void runInventoryOptimizer()
+{
+    int capacity;
+    cout << "Enter warehouse capacity: ";
+    if (!isValidIntInput(capacity))
+    {
+        cout << "Invalid input! Please enter a valid capacity value.\n";
+        return;
+    }
+
+    vector<Product> products;
+    // Assume reading from file is done; here we hardcode some values for demo
+    products.push_back({4, 40, 10});
+    products.push_back({3, 30, 8});
+    products.push_back({2, 20, 6});
+    products.push_back({1, 10, 12});
+
+    InventoryResult result = optimizeInventory(products, capacity);
+
+    cout << "\n--- Inventory Optimization Result ---\n";
+    cout << "Max Profit: " << result.totalProfit << endl;
+    cout << "Selected Product Indices: ";
+    for (int idx : result.selectedProductIndices)
+    {
+        cout << idx << " ";
+    }
+    cout << endl;
+}
+
+void runRecurringExpenseScheduler()
+{
+    int income;
+    cout << "Enter monthly income: ";
+    if (!isValidIntInput(income))
+    {
+        cout << "Invalid input! Please enter a valid income.\n";
+        return;
+    }
+
+    vector<RecurringBill> bills;
+
+    // Example data — you can map from your CSV later
+    bills.push_back({"Electricity", 1500, 10, 100});
+    bills.push_back({"Credit Card", 4000, 5, 200});
+    bills.push_back({"Mobile Bill", 1000, 15, 50});
+    bills.push_back({"Internet", 1200, 20, 80});
+
+    SchedulerResult result = scheduleRecurringExpenses(bills, income);
+
+    cout << "\n--- Recurring Expense Schedule ---\n";
+    for (const string &entry : result.paymentSchedule)
+    {
+        cout << entry << endl;
+    }
+    cout << "Total Penalty Paid: " << result.totalPenaltyPaid << endl;
+}
+
 void menu()
 {
     int choice;
@@ -1929,7 +2105,10 @@ void menu()
             cout << "\n13. Investment Portfolio Optimization";
             cout << "\n14. Encrypt CSV";
             cout << "\n15. Decrypt CSV";
-            cout << "\n16. Exit";
+            cout << "\n16. Run Rent vs Buy";
+            cout << "\n17. Run Inventory Optimizer";
+            cout << "\n18. Run Recurring Expense Scheduler";
+            cout << "\n19. Exit";
             cout << "\nEnter your choice: ";
 
             cin >> choice;
@@ -1940,7 +2119,7 @@ void menu()
                 throw invalid_argument("Input must be an integer.");
             }
 
-            if (choice < 1 || choice > 16)
+            if (choice < 1 || choice > 19)
             {
                 throw out_of_range("Choice must be between 1 and 16.");
             }
@@ -2232,6 +2411,15 @@ void menu()
                 break;
             }
             case 16:
+                runRentVsBuySimulator();
+                break;
+            case 17:
+                runInventoryOptimizer();
+                break;
+            case 18:
+                runRecurringExpenseScheduler();
+                break;
+            case 19:
                 cout << "Exiting program...\n";
                 return;
             }
