@@ -1,6 +1,8 @@
 #include "aps.h"
-
 using namespace std;
+
+vector<int> monthlyTotals(12, 0); // One slot per month
+
 // Function to validate if a file exists
 bool isValidFile(const string &filename)
 {
@@ -167,7 +169,7 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
 
     // ✅ Skip the header line
     getline(file, line);
-
+    fill(monthlyTotals.begin(), monthlyTotals.end(), 0);
     // Read each row of data
     while (getline(file, line))
     {
@@ -201,6 +203,7 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
                 {
                     int amount = stoi(amountStr);
                     vec[month][day].first[i] += amount;
+                    monthlyTotals[month] += amount;
                 }
                 catch (...)
                 {
@@ -218,6 +221,7 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
                 {
                     int amount = stoi(amountStr);
                     vec[month][day].second[i] += amount;
+                    monthlyTotals[month] += amount;
                 }
                 catch (...)
                 {
@@ -238,6 +242,12 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
     else
     {
         cout << "\n\nParsing card details completed successfully!\n";
+    }
+    cout << "Monthly expenses are:\n";
+    for (int i = 0; i < 12; i++)
+    {
+        if (monthlyTotals[i] > 0)
+            cout << i + 1 << ": " << monthlyTotals[i] << endl;
     }
     Sleep(2000);
 
