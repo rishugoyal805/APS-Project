@@ -203,7 +203,10 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
                 {
                     int amount = stoi(amountStr);
                     vec[month][day].first[i] += amount;
-                    monthlyTotals[month] += amount;
+                    if (filename == "OctExpenses.csv")
+                    {
+                        monthlyTotals[month] += amount;
+                    }
                 }
                 catch (...)
                 {
@@ -221,7 +224,10 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
                 {
                     int amount = stoi(amountStr);
                     vec[month][day].second[i] += amount;
-                    monthlyTotals[month] += amount;
+                    if (filename == "OctExpenses.csv")
+                    {
+                        monthlyTotals[month] += amount;
+                    }
                 }
                 catch (...)
                 {
@@ -1907,13 +1913,21 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
     cout << "Decrypted " << inputFilename << " into " << outputFilename << endl;
 }
 
-RentBuyResult rentVsBuyDecision(const RentBuyInput &input)
+RentBuyResult rentVsBuyDecision(const RentBuyInput &input, double interestRate, double rentIncreaseRate)
 {
     RentBuyResult result;
-    result.totalRentCost = input.rentCost * 12 * input.years;
+    // Rent increases every year
+    result.totalRentCost = 0;
+    double currentRent = input.rentCost;
+    for (int i = 0; i < input.years; ++i)
+    {
+        result.totalRentCost += currentRent * 12;
+        currentRent *= (1 + rentIncreaseRate);
+    }
 
-    double emiTotal = input.emi * 12 * input.years;
-    double maintenance = 0.01 * input.propertyCost * input.years; // Assume 1% maintenance
+    // EMI with compound interest (monthly compounding)
+    double emiTotal = input.emi * 12 * ((pow(1 + interestRate / 12, 12 * input.years) - 1) / (interestRate / 12));
+    double maintenance = 0.01 * input.propertyCost * input.years; // 1% maintenance per year
     result.totalBuyCost = emiTotal + maintenance;
 
     result.recommendation = (result.totalBuyCost < result.totalRentCost) ? "Buy" : "Rent";
@@ -1988,11 +2002,31 @@ SchedulerResult scheduleRecurringExpenses(const vector<RecurringBill> &bills, in
 void runRentVsBuySimulator()
 {
     RentBuyInput input;
+    cout << "Enter current month (1-12): ";
+    int month;
+    if (!isValidIntInput(month) || month < 1 || month > 12)
+    {
+        cout << "Invalid month entered!\n";
+        return;
+    }
+    double totalMonthlyExpenses = 0;
+    totalMonthlyExpenses = monthlyTotals[month - 1];
     cout << "Enter monthly income: ";
     if (!isValidDoubleInput(input.income))
     {
         cout << "Invalid amount entered! Please enter a correct income value.\n";
         return;
+    }
+    if (input.income < totalMonthlyExpenses)
+    {
+        char proceed;
+        cout << "Your income is less than monthly expenses (" << totalMonthlyExpenses << "). Do you want to proceed further? (y/n): ";
+        cin >> proceed;
+        if (proceed != 'y' && proceed != 'Y')
+        {
+            cout << "Exiting as per your choice.\n";
+            return;
+        }
     }
     cout << "Enter monthly rent cost: ";
     if (!isValidDoubleInput(input.rentCost))
@@ -2000,6 +2034,12 @@ void runRentVsBuySimulator()
         cout << "Invalid amount entered! Please enter a valid Cost of the Rent.\n";
         return;
     }
+
+    if (input.rentCost > totalMonthlyExpenses)
+    {
+        cout << "Warning: Rent cost is greater than monthly expenses (" << totalMonthlyExpenses << ").\n";
+    }
+
     cout << "Enter home loan EMI: ";
     if (!isValidDoubleInput(input.emi))
     {
@@ -2018,11 +2058,13 @@ void runRentVsBuySimulator()
         cout << "Invalid input! Please enter a valid year.\n";
         return;
     }
-    RentBuyResult result = rentVsBuyDecision(input);
+    double emiInterestRate = 0.08;  // 8% annual interest
+    double rentIncreaseRate = 0.05; // 5% yearly rent hike
+    RentBuyResult result = rentVsBuyDecision(input, emiInterestRate, rentIncreaseRate);
 
     cout << "\n--- Rent vs Buy Analysis ---\n";
-    cout << "Total cost if Renting: " << result.totalRentCost << endl;
-    cout << "Total cost if Buying: " << result.totalBuyCost << endl;
+    cout << "Total cost if Renting (with yearly rent increase): Rs. " << fixed << setprecision(2) << result.totalRentCost << endl;
+    cout << "Total cost if Buying (with compound EMI & maintenance): Rs. " << fixed << setprecision(2) << result.totalBuyCost << endl;
     cout << "Recommendation: " << result.recommendation << endl;
 }
 
@@ -2052,12 +2094,24 @@ void runInventoryOptimizer()
     InventoryResult result = optimizeInventory(products, capacity);
 
     cout << "\n--- Inventory Optimization Result ---\n";
-    cout << "Max Profit: " << result.totalProfit << endl;
-    cout << "Selected Product Indices: ";
+    cout << "Max Profit: " << result.totalProfit << "\n";
+    cout << "Selected Products:\n";
+    cout << "ID\tSize\tProfit\n";
+
     for (int idx : result.selectedProductIndices)
     {
-        cout << idx << " ";
+        const Product &p = products[idx];
+        cout <<"P"<< idx+1 << "\t" << p.size << "\t" << p.profit << "\n";
     }
+    int usedCapacity = 0;
+    for (int idx : result.selectedProductIndices)
+        usedCapacity += products[idx].size;
+
+    cout << "Used Capacity: " << usedCapacity << " / " << capacity << endl;
+
+    if (result.totalProfit < 50)
+        cout << "Warning: Low profitability. Consider restocking high-profit items.\n";
+    Sleep(5000);
     cout << endl;
 }
 
