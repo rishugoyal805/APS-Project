@@ -238,8 +238,8 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
 void encrypt(const string &inputFilename, const string &outputFilename, int key);
 void decrypt(const string &inputFilename, const string &outputFilename, int key);
 
-RentBuyResult rentVsBuyDecision(const RentBuyInput& input);
-InventoryResult optimizeInventory(const vector<Product>& products, int capacity);
-SchedulerResult scheduleRecurringExpenses(const vector<RecurringBill>& bills, int income);
+RentBuyResult rentVsBuyDecision(const RentBuyInput &input);
+InventoryResult optimizeInventory(const vector<Product> &products, int capacity);
+SchedulerResult scheduleRecurringExpenses(const vector<RecurringBill> &bills, int income);
 
 #endif
