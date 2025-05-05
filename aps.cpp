@@ -1449,14 +1449,13 @@ void allocateEmergencyFunds()
     cout << "\nEmergency Fund Transfer Graph Constructed.\n";
     /*displayGraph(edges, edgeCount); */
 
-    cout << "\nMinimum Spanning Transfers (MST):\n";
-    for (auto &e : mst)
-    {
-        if (e.weight > 0)
-            cout << "Transfer from " << e.src << " to " << e.dest << " with cost Rs. " << e.weight << "\n";
-    }
-
-    cout << "Total Minimum Transfer Cost: Rs. " << totalCost << "\n";
+    // cout << "\nMinimum Spanning Transfers (MST):\n";
+    // for (auto &e : mst)
+    // {
+    //     if (e.weight > 0)
+    //         cout << "Transfer from " << e.src << " to " << e.dest << " with cost Rs. " << e.weight << "\n";
+    // }
+    cout << "\nTotal Minimum Transfer Cost: Rs. " << totalCost << "\n";
 
     cout << "Summary:\n";
     cout << "The function 'allocateEmergencyFunds' models daily expenses as a graph and applies Kruskal's algorithm (greedy algorithm) to minimize the cost of transferring emergency funds over time. "
