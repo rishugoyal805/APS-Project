@@ -240,19 +240,13 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
     {
         cout << "Parsing CSV file...\n";
         Sleep(2000);
-        cout << "Parsing completed successfully!\n";
+        cout << "Parsing expenses details completed successfully!\n";
         detectFraudulentTransactions();
     }
     else
     {
-        cout << "\n\nParsing card details completed successfully!\n";
+        cout << "\nParsing card details completed successfully!\n";
     }
-    // cout << "Monthly expenses are:\n";
-    // for (int i = 0; i < 12; i++)
-    // {
-    //     if (monthlyTotals[i] > 0)
-    //         cout << i + 1 << ": " << monthlyTotals[i] << endl;
-    // }
     Sleep(2000);
 
     file.close();
@@ -2508,6 +2502,22 @@ void menu(vector<int> &monthlyTotals)
     }
 }
 
+void displayHeader()
+{
+    cout << "************************************************************" << endl;
+    cout << "*                    WELCOME TO OUR                        *" << endl;
+    cout << "*                    College Connect                       *" << endl;
+    cout << "*                                                          *" << endl;
+    cout << "* Submitted to:                             Programmed by: *" << endl;
+    cout << "* Suma Dawn                                          Rishu *" << endl;
+    cout << "* Tarun Agrawal                               Swayam Gupta *" << endl;
+    cout << "*                                             Maanya Gupta *" << endl;
+    cout << "*                                          Priyanshu Rawat *" << endl;
+    cout << "*                                                          *" << endl;
+    cout << "************************************************************" << "\n"
+         << endl;
+}
+
 // Main function
 int main()
 {
@@ -2525,6 +2535,7 @@ int main()
         return 1;
     }
     // Load existing expenses from CSV file
+    displayHeader();
     parseCSV(filename1, expenseData, monthlyTotals);
     parseCSV(filename2, cardid, monthlyTotals);
     menu(monthlyTotals);
