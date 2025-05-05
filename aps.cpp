@@ -1401,6 +1401,11 @@ void allocateEmergencyFunds()
     Edge edges[MAX_EDGES];
     int edgeCount = 0;
     int nodeId = 0;
+    const char* monthNames[] = {
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
+
 
     // Construct Graph First
     for (int month = 0; month < 12; ++month)
@@ -1450,11 +1455,31 @@ void allocateEmergencyFunds()
     /*displayGraph(edges, edgeCount); */
 
     // cout << "\nMinimum Spanning Transfers (MST):\n";
-    // for (auto &e : mst)
-    // {
-    //     if (e.weight > 0)
-    //         cout << "Transfer from " << e.src << " to " << e.dest << " with cost Rs. " << e.weight << "\n";
-    // }
+    for (auto &e : mst)
+{
+    if (e.weight > 0)
+    {
+        int day1 = e.src % 31;
+        int month1 = e.src / 31;
+
+        int day2 = e.dest % 31;
+        int month2 = e.dest / 31;
+
+        double total1 = 0, total2 = 0;
+        for (int i = 0; i < 3; ++i)
+        {
+            total1 += expenseData[month1][day1].first[i] + expenseData[month1][day1].second[i];
+            total2 += expenseData[month2][day2].first[i] + expenseData[month2][day2].second[i];
+        }
+
+        cout  << monthNames[month1] << " " << (day1 + 1) << " → "
+             << monthNames[month2] << " " << (day2 + 1) << "\n"
+             << "   - " << monthNames[month1] << " " << (day1 + 1) << " Expenses: Rs. " << total1 << "\n"
+             << "   - " << monthNames[month2] << " " << (day2 + 1) << " Expenses: Rs. " << total2 << "\n"
+             << "   - Difference (Transfer Need): Rs. " << e.weight << "\n\n";
+    }
+}
+
     cout << "\nTotal Minimum Transfer Cost: Rs. " << totalCost << "\n";
 
     cout << "Summary:\n";
