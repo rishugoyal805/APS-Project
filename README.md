@@ -1,2 +1,1 @@
-  
-  
+Wealthwise: Algorithmic Financial Supervisor
