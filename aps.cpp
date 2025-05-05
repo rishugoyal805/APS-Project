@@ -1472,7 +1472,7 @@ void allocateEmergencyFunds()
             total2 += expenseData[month2][day2].first[i] + expenseData[month2][day2].second[i];
         }
 
-        cout  << monthNames[month1] << " " << (day1 + 1) << " → "
+        cout  << monthNames[month1] << " " << (day1 + 1) << " ---> "
              << monthNames[month2] << " " << (day2 + 1) << "\n"
              << "   - " << monthNames[month1] << " " << (day1 + 1) << " Expenses: Rs. " << total1 << "\n"
              << "   - " << monthNames[month2] << " " << (day2 + 1) << " Expenses: Rs. " << total2 << "\n"
