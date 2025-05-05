@@ -1632,14 +1632,9 @@ void listAllExpenses(const map<string, double> &expenses)
         cout << entry.first << ": " << entry.second << "\n";
     }
 }
-vector<LoanRepaymentResult> optimizeLoanRepayment(
-    const vector<vector<pair<vector<int>, vector<int>>>> &expenseData,
-    int income,
-    int month,
-    vector<Loan> &loans)
-{
-    // Calculate total spending from expense data
-    int totalSpent = 0;
+
+vector<LoanRepaymentResult> optimizeLoanRepayment(const vector<vector<pair<vector<int>, vector<int>>>> &expenseData, int income, int month, vector<Loan> &loans)
+{   int totalSpent = 0;
     for (int day = 0; day < 31; ++day)
     {
         auto ess = expenseData[month][day].first;
@@ -1649,14 +1644,11 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
         for (int x : nonEss)
             totalSpent += x;
     }
-
     cout << "\n Total Spent: Rs." << totalSpent << endl;
     cout << " Total Income: Rs." << income << endl;
-
     int availableFunds = max(0, income - totalSpent);
     cout << " Available for Loan Repayment: Rs." << availableFunds << endl
          << endl;
-
     // Sort loans by interest density (high interest per unit amount first)
     vector<pair<int, double>> loanPriority; // {index, interest density}
     for (int i = 0; i < loans.size(); ++i)
@@ -1664,13 +1656,10 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
         double density = loans[i].interestRate / loans[i].amount;
         loanPriority.push_back({i, density});
     }
-
     sort(loanPriority.begin(), loanPriority.end(), [](auto &a, auto &b)
          { return a.second > b.second; });
 
     vector<LoanRepaymentResult> results(loans.size());
-
-    // Initialize all loans with 0 paid
     for (int i = 0; i < loans.size(); ++i)
     {
         results[i] = {
@@ -1680,15 +1669,11 @@ vector<LoanRepaymentResult> optimizeLoanRepayment(
             loans[i].amount,
             loans[i].amount * loans[i].interestRate / 100.0};
     }
-
-    // Distribute available funds
     for (const auto &entry : loanPriority)
     {
         int idx = entry.first;
-
         if (availableFunds <= 0)
             break;
-
         double pay = min(loans[idx].amount, (double)availableFunds);
         results[idx].amountPaid = pay;
         results[idx].unpaidAmount = loans[idx].amount - pay;
@@ -1725,39 +1710,32 @@ void displayLoanResults(const vector<LoanRepaymentResult> &results)
 }
 
 void optimizeInvestmentPortfolio(int totalRiskBudget)
-{
-    // Predefined investments
-    vector<Investment> investments = {
+{   vector<Investment> investments = {
         {101, 2000, 5000, 20},
         {102, 100, 500, 10},
         {103, 10000, 50000, 50},
         {104, 100, 500, 10},
-        {105, 6000, 10000, 50}};
-
-    // Sort by return-to-risk ratio
+        {105, 6000, 10000, 50},
+        {106, 2000, 10000, 20},
+        {107, 5000, 20000, 30},
+        {108, 1000, 5000, 15},
+        {109, 3000, 15000, 25},
+        {110, 4000, 20000, 40}};
+    // Sort by return-to-risk ratio (return per unit risk)
     sort(investments.begin(), investments.end(), [](const Investment &a, const Investment &b)
          { return (a.returnPerUnit / a.riskPerUnit) > (b.returnPerUnit / b.riskPerUnit); });
-
     double totalReturn = 0;
     vector<pair<int, int>> selected; // {id, unitsTaken}
-
     for (const auto &inv : investments)
-    {
-        int maxUnitsWeCanTake = min(inv.maxUnits, totalRiskBudget / (int)inv.riskPerUnit);
-
+    {   int maxUnitsWeCanTake = min(inv.maxUnits, totalRiskBudget / (int)inv.riskPerUnit);
         if (maxUnitsWeCanTake >= 1)
-        {
-            int usedRisk = maxUnitsWeCanTake * inv.riskPerUnit;
+        {   int usedRisk = maxUnitsWeCanTake * inv.riskPerUnit;
             totalRiskBudget -= usedRisk;
             totalReturn += maxUnitsWeCanTake * inv.returnPerUnit;
-
             selected.push_back({inv.id, maxUnitsWeCanTake});
         }
-
         if (totalRiskBudget <= 0)
-            break;
-    }
-
+            break;}
     cout << "\nInvestment Portfolio Optimization:\n"
          << endl;
     cout << "+----------------+-------------------+--------------------+" << endl;
@@ -1784,41 +1762,33 @@ void optimizeInvestmentPortfolio(int totalRiskBudget)
 }
 
 void generateBudgetPlan(double monthlyIncome)
-{
-    cout << fixed << setprecision(2);
+{   cout << fixed << setprecision(2);
     cout << "\n Monthly Budget for Income: " << monthlyIncome << "\n"
          << endl;
-
     // NEEDS (50%)
     cout << " NEEDS (50%) - " << 0.50 * monthlyIncome << endl;
     cout << "   Rent (30%): " << 0.30 * monthlyIncome << endl;
     cout << "   Groceries (10%): " << 0.10 * monthlyIncome << endl;
     cout << "   Utilities (5%): " << 0.05 * monthlyIncome << endl;
     cout << "   Transportation (5%): " << 0.05 * monthlyIncome << endl;
-
     // WANTS (15%)
     cout << "\n WANTS (15%) - " << 0.15 * monthlyIncome << endl;
     cout << "   Shopping + EMIs (10%): " << 0.10 * monthlyIncome << endl;
     cout << "   Entertainment + Travel (5%): " << 0.05 * monthlyIncome << endl;
-
     // SAVINGS + INVESTMENTS (20%)
     cout << "\n SAVINGS + INVESTMENTS (20%) - " << 0.20 * monthlyIncome << endl;
     cout << "   Health + Term Insurance (5%): " << 0.05 * monthlyIncome << endl;
     cout << "   SIP (in Mutual Funds) (10%): " << 0.10 * monthlyIncome << endl;
     cout << "   Emergency Fund (5%): " << 0.05 * monthlyIncome << endl;
-
     // OTHERS (15%)
     cout << "\n OTHERS (15%) - " << 0.15 * monthlyIncome << endl;
     cout << "   Upskilling (5%): " << 0.05 * monthlyIncome << endl;
     cout << "   Family Support (10%): " << 0.10 * monthlyIncome << endl;
-
     cout << "\n TOTAL: " << monthlyIncome << " distributed across needs, wants, savings, and others.\n"
          << endl;
-
     cout << "Summary:\n";
     cout << "The function 'generateBudgetPlan' categorizes a user's monthly income into Needs, Wants, Savings + Investments, and Others based on fixed percentages. "
-         << "It calculates and displays each category and sub-category with exact monetary allocations using standard financial budgeting principles. \n\n";
-}
+         << "It calculates and displays each category and sub-category with exact monetary allocations using standard financial budgeting principles. \n\n";}
 
 void encrypt(const string &inputFilename, const string &outputFilename, int key)
 {
@@ -1881,79 +1851,56 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
 }
 
 void runRentVsBuySimulator(vector<int> &monthlyTotals)
-{
-    RentBuyInput input;    
+{   RentBuyInput input;
     double totalMonthlyExpenses = monthlyTotals[9];
-
     cout << "Enter monthly income: ";
-    if (!isValidDoubleInput(input.income)) {
-        cout << "Invalid amount entered! Please enter a correct income value.\n";
-        return;
-    }
-
-    if (input.income < totalMonthlyExpenses) {
-        char proceed;
+    if (!isValidDoubleInput(input.income))
+    {   cout << "Invalid amount entered! Please enter a correct income value.\n";
+        return;}
+    if (input.income < totalMonthlyExpenses)
+    {   char proceed;
         cout << "Your income is less than monthly expenses (" << totalMonthlyExpenses << "). Do you want to proceed further? (y/n): ";
         cin >> proceed;
-        if (proceed != 'y' && proceed != 'Y') {
-            cout << "Exiting as per your choice.\n";
-            return;
-        }
-    }
-
+        if (proceed != 'y' && proceed != 'Y')
+        {   cout << "Exiting as per your choice.\n";
+            return;}}
     cout << "Enter monthly rent cost: ";
-    if (!isValidDoubleInput(input.rentCost)) {
-        cout << "Invalid amount entered! Please enter a valid rent cost.\n";
-        return;
-    }
-
+    if (!isValidDoubleInput(input.rentCost))
+    {   cout << "Invalid amount entered! Please enter a valid rent cost.\n";
+        return; }
     double savings = input.income - totalMonthlyExpenses;
-    if (input.rentCost < savings) {
-        cout << " The rent is affordable, as it is less than your monthly savings (Rs. " << fixed << setprecision(2) << savings << ").\n";
-    } else {
-        cout << " The rent might stretch your budget, as it exceeds your monthly savings.\n";
-    }
-
+    if (input.rentCost < savings)
+    {cout << " The rent is affordable, as it is less than your monthly savings (Rs. " << fixed << setprecision(2) << savings << ").\n";}
+    else
+    {cout << " The rent might stretch your budget, as it exceeds your monthly savings.\n";}
     cout << "Enter home loan EMI: ";
-    if (!isValidDoubleInput(input.emi)) {
-        cout << "Invalid amount entered! Please enter a valid EMI value.\n";
-        return;
-    }
-
+    if (!isValidDoubleInput(input.emi))
+    {  cout << "Invalid amount entered! Please enter a valid EMI value.\n";
+        return; }
     cout << "Enter total property cost: ";
-    if (!isValidDoubleInput(input.propertyCost)) {
-        cout << "Invalid amount entered! Please enter a valid property cost.\n";
-        return;
-    }
-
+    if (!isValidDoubleInput(input.propertyCost))
+    {   cout << "Invalid amount entered! Please enter a valid property cost.\n";
+        return;}
     cout << "Enter years of stay: ";
-    if (!isValidIntInput(input.years)) {
-        cout << "Invalid input! Please enter a valid year.\n";
-        return;
-    }
-
+    if (!isValidIntInput(input.years))
+    {        cout << "Invalid input! Please enter a valid year.\n";
+        return;}
     double emiInterestRate;
     cout << "Enter home loan interest rate (e.g., 0.08 for 8%): ";
-    if (!isValidDoubleInput(emiInterestRate)) {
-        cout << "Invalid amount entered! Please enter a valid home loan interest rate.\n";
-        return;
-    }
-
+    if (!isValidDoubleInput(emiInterestRate))
+    {        cout << "Invalid amount entered! Please enter a valid home loan interest rate.\n";
+        return;}
     double rentIncreaseRate;
     cout << "Enter expected annual rent increase rate (e.g., 0.05 for 5%): ";
-    if (!isValidDoubleInput(rentIncreaseRate)) {
-        cout << "Invalid amount entered! Please enter a valid rent increase rate.\n";
-        return;
-    }
-
+    if (!isValidDoubleInput(rentIncreaseRate))
+    {   cout << "Invalid amount entered! Please enter a valid rent increase rate.\n";
+        return; }
     RentBuyResult result = rentVsBuyDecision(input, emiInterestRate, rentIncreaseRate);
-
     cout << "\n--- Rent vs Buy Analysis ---\n";
     cout << "Total cost if Renting (with yearly rent increase): Rs. " << fixed << setprecision(2) << result.totalRentCost << endl;
     cout << "Total cost if Buying (with compound EMI): Rs. " << fixed << setprecision(2) << result.totalBuyCost << endl;
-    cout << "Years to own the property: " << fixed << setprecision(2) << result.yearsToOwnProperty<< endl;
+    cout << "Years to own the property: " << fixed << setprecision(2) << result.yearsToOwnProperty << endl;
     cout << "Recommendation: " << result.recommendation << endl;
-
     Sleep(2000);
     cout << endl;
 }
@@ -1982,7 +1929,8 @@ RentBuyResult rentVsBuyDecision(const RentBuyInput &input, double interestRate, 
         double monthlyInterest = remainingPrincipal * monthlyRate;
         double principalPaid = input.emi - monthlyInterest;
 
-        if (principalPaid <= 0) {
+        if (principalPaid <= 0)
+        {
             // EMI is too low — user will never be able to buy the house
             result.totalBuyCost = -1;
             result.yearsToOwnProperty = -1;
@@ -2068,8 +2016,6 @@ SchedulerResult scheduleRecurringExpenses(const vector<RecurringBill> &bills, in
     }
     return result;
 }
-
-
 
 void runInventoryOptimizer()
 {
@@ -2166,13 +2112,9 @@ void runRecurringExpenseScheduler(vector<int> &monthlyTotals)
 }
 
 void menu(vector<int> &monthlyTotals)
-{
-    int choice;
-
+{    int choice;
     while (true)
-    {
-        try
-        {
+    {try{
             cout << "\nExpense Tracker Menu:";
             cout << "\n1. Display Expenses";
             cout << "\n2. Add Expense";
@@ -2194,15 +2136,11 @@ void menu(vector<int> &monthlyTotals)
             cout << "\n18. Recurring Expense Scheduler";
             cout << "\n19. Exit";
             cout << "\nEnter your choice: ";
-
             cin >> choice;
-
-            // Validate input
             if (cin.fail())
             {
                 throw invalid_argument("Input must be an integer.");
             }
-
             if (choice < 1 || choice > 19)
             {
                 throw out_of_range("Choice must be between 1 and 16.");
@@ -2219,7 +2157,11 @@ void menu(vector<int> &monthlyTotals)
             vector<Loan> loans = {
                 Loan(1, 15000, 10.5),
                 Loan(2, 20000, 8.2),
-                Loan(3, 12000, 12.0)};
+                Loan(3, 12000, 12.0),
+                Loan(4, 5000, 5.0),
+                Loan(5, 8000, 7.5),
+                Loan(6, 10000, 9.0),
+                Loan(7, 7000, 6.5)};
             vector<LoanRepaymentResult> payVecLoan;
             vector<Investment> investments;
             vector<InvestmentSelection> result;
@@ -2296,9 +2238,7 @@ void menu(vector<int> &monthlyTotals)
                 Sleep(200);
                 break;
             case 9:
-            {
-
-                int goal;
+            {   int goal;
                 while (true)
                 {
                     cout << "Enter your target savings goal (in Rs): ";
@@ -2380,9 +2320,7 @@ void menu(vector<int> &monthlyTotals)
                      << "allocating funds to minimize interest accumulation.\n"
                      << "This is similar to LeetCode Problem 134 ('Gas Station') and strategies for debt repayment.\n"
                      << "The time complexity is O(M * N + 3 log 3 + 3 log 3), where M is the number of months, and N is the number of days.\n\n";
-                break;
-            }
-
+                break;}
             case 11:
                 travelExpenseMinimizer(); // Call our feature here
                 cout << "Summary:\n";
@@ -2391,7 +2329,6 @@ void menu(vector<int> &monthlyTotals)
                      << "This is similar to problems like LeetCode Problem 787, but extended to include hotel costs.\n"
                      << "The time complexity is O(E x log V), where V is the number of cities and E is the number of flight routes.\n\n";
                 break;
-
             case 12:
                 cout << "Enter your income: ";
                 int income1;
@@ -2404,7 +2341,6 @@ void menu(vector<int> &monthlyTotals)
                     cout << "Invalid input. Please enter a numeric value.\n";
                     break; // or break if inside switch-case
                 }
-
                 if (income1 <= 0)
                 {
                     cout << "Income must be a positive value.\n";
@@ -2413,13 +2349,11 @@ void menu(vector<int> &monthlyTotals)
                 cout << "Enter the month number (1 for January, 12 for December): ";
                 int month;
                 cin >> month;
-
                 if (month < 1 || month > 12)
                 {
                     cout << "Invalid month entered. Please enter a value between 1 and 12." << endl;
                     break;
                 }
-
                 payVecLoan = optimizeLoanRepayment(expenseData, income1, (month - 1), loans);
                 displayLoanResults(payVecLoan);
                 cout << "Summary:\n";
@@ -2438,11 +2372,9 @@ void menu(vector<int> &monthlyTotals)
                      << "It allocates the budget across available options to maximize total return, selecting as many units as allowed by the risk constraint. "
                      << "This is conceptually similar to the Fractional Knapsack problem on LeetCode, where items with the highest value-to-weight ratio are prioritized. "
                      << "The topics used include Greedy Algorithms and Sorting, and the time complexity is O(n log n), where n is the number of investments.\n\n";
-
                 break;
             case 14:
-            {
-                int key;
+            {   int key;
                 cout << "Enter encryption key (positive integer): ";
                 cin >> key;
                 encrypt(filename, "encrypted_Expenses.csv", key);
@@ -2454,11 +2386,9 @@ void menu(vector<int> &monthlyTotals)
                      << "This resembles LeetCode string manipulation problems like 1844 (Replace All Digits with Characters) or 709 (To Lower Case). "
                      << "The time complexity is O(n), where n is the number of characters in the input file.\n\n";
                 Sleep(200);
-                break;
-            }
+                break;}
             case 15:
-            {
-                int key;
+            {   int key;
                 cout << "Enter decryption key (must match encryption key): ";
                 cin >> key;
                 decrypt("encrypted_Expenses.csv", "decrypted_Expenses.csv", key);
@@ -2471,8 +2401,7 @@ void menu(vector<int> &monthlyTotals)
                      << "The time complexity is O(n), where n is the number of characters in the input file.\n\n";
 
                 Sleep(200);
-                break;
-            }
+                break;}
             case 16:
                 runRentVsBuySimulator(monthlyTotals);
                 cout << "Summary:\n";
