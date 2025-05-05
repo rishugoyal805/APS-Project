@@ -888,12 +888,6 @@ bool deleteExpenses(string &filename, string &date)
         cerr << "No expenses found for date: " << date << ". Nothing deleted.\n";
         return false;
     }
-    displayExpenses();
-    cout << "Summary:\n";
-    cout << "The function `deleteExpenses` removes all expense data for a specified date from both memory and a CSV file. "
-         << "It first parses the date, validates it, clears the corresponding in-memory entries, then rewrites the CSV without that date's entry. "
-         << "This resembles LeetCode file-handling or string-parsing problems like 'Delete Operation for Two Strings'. "
-         << "It uses topics like file I/O, error handling, date parsing, and string manipulation. Time complexity is O(n), where n is the number of lines in the file.\n\n";
 }
 void menu(vector<int> &monthlyTotals);
 void optimizeSavingsPlan(vector<tuple<int, int, string>> &nonEssentialExpensesWithDates, int &goal)
@@ -1022,12 +1016,6 @@ double optimizeSavings(int &goal)
         }
     }
     optimizeSavingsPlan(nonEssentialExpensesWithDates, goal);
-    cout << "Summary:\n";
-    cout << "The function analyzes daily non-essential expenses and uses a dynamic programming approach to suggest optimal reductions \n"
-         << "that help achieve a user-defined savings goal with minimal sacrifices. It selects a subset of expenses that maximize savings \n"
-         << "and minimize the number of items removed using a 0/1 Knapsack strategy. This is similar to LeetCode Problem 416 (Partition Equal Subset Sum), \n"
-         << "and involves topics like dynamic programming and subset optimization. The time complexity is O(N * G), where N is the number of expenses and G is the goal.\n\n";
-
     return 0;
 }
 
@@ -2139,7 +2127,7 @@ void runRecurringExpenseScheduler(vector<int> &monthlyTotals)
     {
         cout << entry << endl;
     }
-    cout << "Total Penalty Paid: " << result.totalPenaltyPaid << endl;
+    cout << "Total Penalty Paid: Rs." << result.totalPenaltyPaid << endl;
     Sleep(2000);
 }
 
@@ -2167,9 +2155,9 @@ void menu(vector<int> &monthlyTotals)
             cout << "\n13. Investment Portfolio Optimization";
             cout << "\n14. Encrypt CSV";
             cout << "\n15. Decrypt CSV";
-            cout << "\n16. Run Rent vs Buy";
-            cout << "\n17. Run Inventory Optimizer";
-            cout << "\n18. Run Recurring Expense Scheduler";
+            cout << "\n16. Rent vs Buy";
+            cout << "\n17. Inventory Optimizer";
+            cout << "\n18. Recurring Expense Scheduler";
             cout << "\n19. Exit";
             cout << "\nEnter your choice: ";
 
@@ -2226,6 +2214,12 @@ void menu(vector<int> &monthlyTotals)
                 if (deleteExpenses(filename, date) || deleteExpenses(filename2, date))
                 {
                     cout << "Expenses for date " << date << " have been deleted successfully.\n";
+                    displayExpenses();
+                    cout << "Summary:\n";
+                    cout << "The function `deleteExpenses` removes all expense data for a specified date from both memory and a CSV file. "
+                         << "It first parses the date, validates it, clears the corresponding in-memory entries, then rewrites the CSV without that date's entry. "
+                         << "This resembles LeetCode file-handling or string-parsing problems like 'Delete Operation for Two Strings'. "
+                         << "It uses topics like file I/O, error handling, date parsing, and string manipulation. Time complexity is O(n), where n is the number of lines in the file.\n\n";
                     Sleep(2000);
                 }
                 else
@@ -2292,6 +2286,9 @@ void menu(vector<int> &monthlyTotals)
                 cout << "\nSummary of your savings configuration:\n";
                 cout << "  - Base Target Goal     : Rs. " << goal << endl;
                 cout << "  - Flexibility Allowed  : Rs. " << excessAmount << endl;
+
+                cout << "\nAttempting optimization for *Exact Goal (Rs. " << goal << ")*...\n";
+                optimizeSavings(goal); // Call for exact match
                 if (excessAmount > 0)
                     cout << "  - Extended Target Goal : Rs. " << goal + excessAmount << endl;
                 else
@@ -2302,11 +2299,6 @@ void menu(vector<int> &monthlyTotals)
                     int finalGoal = goal + excessAmount;
                     cout << "\nAttempting optimization for *Flexible Goal (Up to Rs. " << finalGoal << ")*...\n";
                     optimizeSavings(finalGoal); // Call for flexible version
-                }
-                else
-                {
-                    cout << "\nAttempting optimization for *Exact Goal (Rs. " << goal << ")*...\n";
-                    optimizeSavings(goal); // Call for exact match
                 }
 
                 break;
@@ -2496,8 +2488,8 @@ void displayHeader()
     cout << "*                    College Connect                       *" << endl;
     cout << "*                                                          *" << endl;
     cout << "* Submitted to:                             Programmed by: *" << endl;
-    cout << "* Suma Dawn                                          Rishu *" << endl;
-    cout << "* Tarun Agrawal                               Swayam Gupta *" << endl;
+    cout << "* Dr. Suma Dawn                                      Rishu *" << endl;
+    cout << "* Mr. Tarun Agrawal                           Swayam Gupta *" << endl;
     cout << "*                                             Maanya Gupta *" << endl;
     cout << "*                                          Priyanshu Rawat *" << endl;
     cout << "*                                                          *" << endl;

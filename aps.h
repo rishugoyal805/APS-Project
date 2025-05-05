@@ -118,7 +118,7 @@ public:
 class SchedulerResult {
 public:
     vector<string> paymentSchedule;
-    double totalPenaltyPaid;
+    double totalPenaltyPaid=0;
 };
 
 // -- Loans --
