@@ -1021,20 +1021,6 @@ double optimizeSavings(int &goal)
             }
         }
     }
-
-    // cout << "\nAll Extracted Non-Essential Expenses with Dates and Categories:\n";
-    // cout << left << setw(10) << "Amount" << setw(12) << "Date (MM-DD)" << "Category" << endl;
-    // cout << "-----------------------------------------" << endl;
-    // for (auto &entry : nonEssentialExpensesWithDates)
-    // {
-    //     int expense = get<0>(entry);
-    //     int d = get<1>(entry);
-    //     string category = get<2>(entry);
-    //     int month = d / 100;
-    //     int day = d % 100;
-    //     cout << left << setw(10) << expense << setfill('0') << setw(2) << month << "-" << setw(2) << day << setfill(' ') << "   " << category << endl;
-    // }
-
     optimizeSavingsPlan(nonEssentialExpensesWithDates, goal);
     cout << "Summary:\n";
     cout << "The function analyzes daily non-essential expenses and uses a dynamic programming approach to suggest optimal reductions \n"
@@ -1845,6 +1831,7 @@ void generateBudgetPlan(double monthlyIncome)
     cout << "The function 'generateBudgetPlan' categorizes a user's monthly income into Needs, Wants, Savings + Investments, and Others based on fixed percentages. "
          << "It calculates and displays each category and sub-category with exact monetary allocations using standard financial budgeting principles. \n\n";
 }
+
 void encrypt(const string &inputFilename, const string &outputFilename, int key)
 {
     ifstream input(inputFilename);
