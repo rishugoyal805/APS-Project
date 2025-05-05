@@ -1,8 +1,6 @@
 #include "aps.h"
 using namespace std;
 
-vector<int> monthlyTotals(12, 0); // One slot per month
-
 // Function to validate if a file exists
 bool isValidFile(const string &filename)
 {
@@ -156,7 +154,7 @@ void detectFraudulentTransactions()
     }
 }
 
-void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int>>>> &vec)
+void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int>>>> &vec, vector<int> &monthlyTotals)
 {
     ifstream file(filename);
     if (!file.is_open())
@@ -169,7 +167,7 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
 
     // ✅ Skip the header line
     getline(file, line);
-    fill(monthlyTotals.begin(), monthlyTotals.end(), 0);
+    // fill(monthlyTotals.begin(), monthlyTotals.end(), 0);
     // Read each row of data
     while (getline(file, line))
     {
@@ -249,12 +247,12 @@ void parseCSV(const string &filename, vector<vector<pair<vector<int>, vector<int
     {
         cout << "\n\nParsing card details completed successfully!\n";
     }
-    cout << "Monthly expenses are:\n";
-    for (int i = 0; i < 12; i++)
-    {
-        if (monthlyTotals[i] > 0)
-            cout << i + 1 << ": " << monthlyTotals[i] << endl;
-    }
+    // cout << "Monthly expenses are:\n";
+    // for (int i = 0; i < 12; i++)
+    // {
+    //     if (monthlyTotals[i] > 0)
+    //         cout << i + 1 << ": " << monthlyTotals[i] << endl;
+    // }
     Sleep(2000);
 
     file.close();
@@ -903,7 +901,7 @@ bool deleteExpenses(string &filename, string &date)
          << "This resembles LeetCode file-handling or string-parsing problems like 'Delete Operation for Two Strings'. "
          << "It uses topics like file I/O, error handling, date parsing, and string manipulation. Time complexity is O(n), where n is the number of lines in the file.\n\n";
 }
-void menu();
+void menu(vector<int> &monthlyTotals);
 void optimizeSavingsPlan(vector<tuple<int, int, string>> &nonEssentialExpensesWithDates, int &goal)
 {
     int n = nonEssentialExpensesWithDates.size();
@@ -1999,7 +1997,7 @@ SchedulerResult scheduleRecurringExpenses(const vector<RecurringBill> &bills, in
     return result;
 }
 
-void runRentVsBuySimulator()
+void runRentVsBuySimulator(vector<int> &monthlyTotals)
 {
     RentBuyInput input;
     cout << "Enter current month (1-12): ";
@@ -2066,6 +2064,8 @@ void runRentVsBuySimulator()
     cout << "Total cost if Renting (with yearly rent increase): Rs. " << fixed << setprecision(2) << result.totalRentCost << endl;
     cout << "Total cost if Buying (with compound EMI & maintenance): Rs. " << fixed << setprecision(2) << result.totalBuyCost << endl;
     cout << "Recommendation: " << result.recommendation << endl;
+    Sleep(2000);
+    cout << endl;
 }
 
 void runInventoryOptimizer()
@@ -2101,7 +2101,7 @@ void runInventoryOptimizer()
     for (int idx : result.selectedProductIndices)
     {
         const Product &p = products[idx];
-        cout <<"P"<< idx+1 << "\t" << p.size << "\t" << p.profit << "\n";
+        cout << "P" << idx + 1 << "\t" << p.size << "\t" << p.profit << "\n";
     }
     int usedCapacity = 0;
     for (int idx : result.selectedProductIndices)
@@ -2111,29 +2111,47 @@ void runInventoryOptimizer()
 
     if (result.totalProfit < 50)
         cout << "Warning: Low profitability. Consider restocking high-profit items.\n";
-    Sleep(5000);
+    Sleep(2000);
     cout << endl;
 }
 
-void runRecurringExpenseScheduler()
+void runRecurringExpenseScheduler(vector<int> &monthlyTotals)
 {
     int income;
-    cout << "Enter monthly income: ";
-    if (!isValidIntInput(income))
+    cout << "Enter your monthly income: ";
+    if (!isValidIntInput(income) || income <= 0)
     {
-        cout << "Invalid input! Please enter a valid income.\n";
+        cout << "Invalid input! Please enter a positive integer for income.\n";
         return;
     }
 
-    vector<RecurringBill> bills;
+    int month;
+    cout << "Enter month number (1-12): ";
+    if (!isValidIntInput(month) || month < 1 || month > 12)
+    {
+        cout << "Invalid month! Please enter a number between 1 and 12.\n";
+        return;
+    }
+    double totalMonthExpenses = 0;
+    totalMonthExpenses = monthlyTotals[month - 1];
+    double availableIncome = income - totalMonthExpenses;
 
-    // Example data — you can map from your CSV later
-    bills.push_back({"Electricity", 1500, 10, 100});
-    bills.push_back({"Credit Card", 4000, 5, 200});
-    bills.push_back({"Mobile Bill", 1000, 15, 50});
-    bills.push_back({"Internet", 1200, 20, 80});
+    cout << "Total expenses for month " << month << ": " << totalMonthExpenses << endl;
+    cout << "Available income after expenses: " << availableIncome << endl;
 
-    SchedulerResult result = scheduleRecurringExpenses(bills, income);
+    if (availableIncome <= 0)
+    {
+        cout << "Warning: You have no disposable income for scheduling bills.\n";
+        return;
+    }
+
+    vector<RecurringBill> bills = {
+        {"Electricity", 1500, 10, 100},
+        {"Credit Card", 4000, 5, 200},
+        {"Mobile Bill", 1000, 15, 50},
+        {"Internet", 1200, 20, 80}};
+
+    SchedulerResult result = scheduleRecurringExpenses(bills, static_cast<int>(availableIncome));
 
     cout << "\n--- Recurring Expense Schedule ---\n";
     for (const string &entry : result.paymentSchedule)
@@ -2141,9 +2159,10 @@ void runRecurringExpenseScheduler()
         cout << entry << endl;
     }
     cout << "Total Penalty Paid: " << result.totalPenaltyPaid << endl;
+    Sleep(2000);
 }
 
-void menu()
+void menu(vector<int> &monthlyTotals)
 {
     int choice;
 
@@ -2311,30 +2330,6 @@ void menu()
 
                 break;
             }
-
-            // case 10:
-
-            //     // cout << "Enter your available funds: " << endl;
-            //     // int funds;
-            //     // cin >> funds;
-            //     // payVec = optimizeCreditCardPayments(expenseData, cardid, cardVec, funds);
-            //     // displayResults(payVec);
-            //     int funds;
-            //     while (true)
-            //     {
-            //         cout << "💰 Enter your available funds for credit card payments (in Rs): ";
-            //         if (cin >> funds && funds >= 0)
-            //             break;
-
-            //         cout << " Invalid input. Please enter a non-negative numeric value.\n";
-            //         cin.clear();
-            //         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            //     }
-
-            //     vector<PaymentResult> pay = optimizeCreditCardPayments(expenseData, cardid, cardVec, funds);
-            //     displayResults(pay);
-
-            //     break;
             case 10:
             {
                 int funds;
@@ -2472,13 +2467,32 @@ void menu()
                 break;
             }
             case 16:
-                runRentVsBuySimulator();
+                runRentVsBuySimulator(monthlyTotals);
+                cout << "Summary:\n";
+                cout << "The function evaluates whether renting or buying a property is financially smarter by comparing cumulative rent costs (with yearly hikes) against compounded EMI payments and maintenance using basic financial modeling. "
+                     << "It uses decision-making strategies similar to LeetCode problems involving dynamic simulations and compound interest (e.g., 'Best Time to Buy and Sell Stock'). "
+                     << "Topics involved include Greedy methods and Financial Math modeling. "
+                     << "The time complexity is O(y) for y years of simulation, with additional O(1) compound interest math operations.\n\n";
+
+                Sleep(3000);
                 break;
             case 17:
                 runInventoryOptimizer();
+                cout << "Summary:\n";
+                cout << "The function optimizes inventory storage using a dynamic programming strategy, selecting products that maximize profit without exceeding warehouse capacity. "
+                     << "It reconstructs the selection path to determine which products were included in the optimal solution. "
+                     << "This mirrors classic 0/1 Knapsack problems on LeetCode (e.g., '01 Knapsack' or 'Partition Equal Subset Sum'). "
+                     << "The time complexity is O(n * capacity), where n is the number of products.\n\n";
+                Sleep(3000);
                 break;
             case 18:
-                runRecurringExpenseScheduler();
+                runRecurringExpenseScheduler(monthlyTotals);
+                cout << "Summary:\n";
+                cout << "The function schedules recurring expenses by first calculating disposable income after monthly expenses, then uses a greedy strategy to prioritize bill payments based on penalty severity. "
+                     << "It ensures that the most financially damaging bills are paid first when income is limited, reducing total penalties. "
+                     << "This problem resembles greedy selection problems like LeetCode's 'Task Scheduler' or 'IPO', where maximum gain or minimum loss is prioritized under constraints. "
+                     << "The key topics include Greedy Algorithms, Sorting, and Budgeting Simulation. Time complexity is O(n log n), where n is the number of bills.\n\n";
+                Sleep(3000);
                 break;
             case 19:
                 cout << "Exiting program...\n";
@@ -2499,6 +2513,7 @@ int main()
 {
     string filename1 = "OctExpenses.csv";
     string filename2 = "carddetails.csv";
+    vector<int> monthlyTotals(12, 0.0); // One slot per month
     if (!isValidFile(filename1))
     {
         cerr << "Error: File1 not found or inaccessible." << endl;
@@ -2510,9 +2525,9 @@ int main()
         return 1;
     }
     // Load existing expenses from CSV file
-    parseCSV(filename1, expenseData);
-    parseCSV(filename2, cardid);
-    menu();
+    parseCSV(filename1, expenseData, monthlyTotals);
+    parseCSV(filename2, cardid, monthlyTotals);
+    menu(monthlyTotals);
     return 0;
 }
 // 2024-10-09,200,250,600,300,250,500   #Fraudulent: Sudden high spending
