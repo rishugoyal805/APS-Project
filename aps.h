@@ -92,6 +92,7 @@ public:
     double totalRentCost;
     double totalBuyCost;
     string recommendation;
+    int yearsToOwnProperty;
 };
 
 class Product {

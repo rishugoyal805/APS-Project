@@ -1880,10 +1880,89 @@ void decrypt(const string &inputFilename, const string &outputFilename, int key)
     cout << "Decrypted " << inputFilename << " into " << outputFilename << endl;
 }
 
+void runRentVsBuySimulator(vector<int> &monthlyTotals)
+{
+    RentBuyInput input;    
+    double totalMonthlyExpenses = monthlyTotals[9];
+
+    cout << "Enter monthly income: ";
+    if (!isValidDoubleInput(input.income)) {
+        cout << "Invalid amount entered! Please enter a correct income value.\n";
+        return;
+    }
+
+    if (input.income < totalMonthlyExpenses) {
+        char proceed;
+        cout << "Your income is less than monthly expenses (" << totalMonthlyExpenses << "). Do you want to proceed further? (y/n): ";
+        cin >> proceed;
+        if (proceed != 'y' && proceed != 'Y') {
+            cout << "Exiting as per your choice.\n";
+            return;
+        }
+    }
+
+    cout << "Enter monthly rent cost: ";
+    if (!isValidDoubleInput(input.rentCost)) {
+        cout << "Invalid amount entered! Please enter a valid rent cost.\n";
+        return;
+    }
+
+    double savings = input.income - totalMonthlyExpenses;
+    if (input.rentCost < savings) {
+        cout << " The rent is affordable, as it is less than your monthly savings (Rs. " << fixed << setprecision(2) << savings << ").\n";
+    } else {
+        cout << " The rent might stretch your budget, as it exceeds your monthly savings.\n";
+    }
+
+    cout << "Enter home loan EMI: ";
+    if (!isValidDoubleInput(input.emi)) {
+        cout << "Invalid amount entered! Please enter a valid EMI value.\n";
+        return;
+    }
+
+    cout << "Enter total property cost: ";
+    if (!isValidDoubleInput(input.propertyCost)) {
+        cout << "Invalid amount entered! Please enter a valid property cost.\n";
+        return;
+    }
+
+    cout << "Enter years of stay: ";
+    if (!isValidIntInput(input.years)) {
+        cout << "Invalid input! Please enter a valid year.\n";
+        return;
+    }
+
+    double emiInterestRate;
+    cout << "Enter home loan interest rate (e.g., 0.08 for 8%): ";
+    if (!isValidDoubleInput(emiInterestRate)) {
+        cout << "Invalid amount entered! Please enter a valid home loan interest rate.\n";
+        return;
+    }
+
+    double rentIncreaseRate;
+    cout << "Enter expected annual rent increase rate (e.g., 0.05 for 5%): ";
+    if (!isValidDoubleInput(rentIncreaseRate)) {
+        cout << "Invalid amount entered! Please enter a valid rent increase rate.\n";
+        return;
+    }
+
+    RentBuyResult result = rentVsBuyDecision(input, emiInterestRate, rentIncreaseRate);
+
+    cout << "\n--- Rent vs Buy Analysis ---\n";
+    cout << "Total cost if Renting (with yearly rent increase): Rs. " << fixed << setprecision(2) << result.totalRentCost << endl;
+    cout << "Total cost if Buying (with compound EMI): Rs. " << fixed << setprecision(2) << result.totalBuyCost << endl;
+    cout << "Years to own the property: " << fixed << setprecision(2) << result.yearsToOwnProperty<< endl;
+    cout << "Recommendation: " << result.recommendation << endl;
+
+    Sleep(2000);
+    cout << endl;
+}
+
 RentBuyResult rentVsBuyDecision(const RentBuyInput &input, double interestRate, double rentIncreaseRate)
 {
     RentBuyResult result;
-    // Rent increases every year
+
+    // --- Rent Cost Simulation (only for years of stay) ---
     result.totalRentCost = 0;
     double currentRent = input.rentCost;
     for (int i = 0; i < input.years; ++i)
@@ -1892,12 +1971,36 @@ RentBuyResult rentVsBuyDecision(const RentBuyInput &input, double interestRate, 
         currentRent *= (1 + rentIncreaseRate);
     }
 
-    // EMI with compound interest (monthly compounding)
-    double emiTotal = input.emi * 12 * ((pow(1 + interestRate / 12, 12 * input.years) - 1) / (interestRate / 12));
-    double maintenance = 0.01 * input.propertyCost * input.years; // 1% maintenance per year
-    result.totalBuyCost = emiTotal + maintenance;
+    // --- EMI Loan Simulation (till house is fully paid off) ---
+    double remainingPrincipal = input.propertyCost;
+    double monthlyRate = interestRate / 12;
+    int months = 0;
+    double totalEmiPaid = 0;
 
+    while (remainingPrincipal > 0 && months < 1000 * 12) // max 1000 years safety cap
+    {
+        double monthlyInterest = remainingPrincipal * monthlyRate;
+        double principalPaid = input.emi - monthlyInterest;
+
+        if (principalPaid <= 0) {
+            // EMI is too low — user will never be able to buy the house
+            result.totalBuyCost = -1;
+            result.yearsToOwnProperty = -1;
+            result.recommendation = "EMI too low to ever repay the loan.";
+            return result;
+        }
+
+        remainingPrincipal -= principalPaid;
+        totalEmiPaid += input.emi;
+        months++;
+    }
+
+    result.totalBuyCost = totalEmiPaid;
+    result.yearsToOwnProperty = (months + 11) / 12; // round up to nearest year
+
+    // --- Recommendation (based on years of stay vs ownership) ---
     result.recommendation = (result.totalBuyCost < result.totalRentCost) ? "Buy" : "Rent";
+
     return result;
 }
 
@@ -1966,76 +2069,7 @@ SchedulerResult scheduleRecurringExpenses(const vector<RecurringBill> &bills, in
     return result;
 }
 
-void runRentVsBuySimulator(vector<int> &monthlyTotals)
-{
-    RentBuyInput input;
-    cout << "Enter current month (1-12): ";
-    int month;
-    if (!isValidIntInput(month) || month < 1 || month > 12)
-    {
-        cout << "Invalid month entered!\n";
-        return;
-    }
-    double totalMonthlyExpenses = 0;
-    totalMonthlyExpenses = monthlyTotals[month - 1];
-    cout << "Enter monthly income: ";
-    if (!isValidDoubleInput(input.income))
-    {
-        cout << "Invalid amount entered! Please enter a correct income value.\n";
-        return;
-    }
-    if (input.income < totalMonthlyExpenses)
-    {
-        char proceed;
-        cout << "Your income is less than monthly expenses (" << totalMonthlyExpenses << "). Do you want to proceed further? (y/n): ";
-        cin >> proceed;
-        if (proceed != 'y' && proceed != 'Y')
-        {
-            cout << "Exiting as per your choice.\n";
-            return;
-        }
-    }
-    cout << "Enter monthly rent cost: ";
-    if (!isValidDoubleInput(input.rentCost))
-    {
-        cout << "Invalid amount entered! Please enter a valid Cost of the Rent.\n";
-        return;
-    }
 
-    if (input.rentCost > totalMonthlyExpenses)
-    {
-        cout << "Warning: Rent cost is greater than monthly expenses (" << totalMonthlyExpenses << ").\n";
-    }
-
-    cout << "Enter home loan EMI: ";
-    if (!isValidDoubleInput(input.emi))
-    {
-        cout << "Invalid amount entered! Please enter a valid EMI value.\n";
-        return;
-    }
-    cout << "Enter total property cost: ";
-    if (!isValidDoubleInput(input.propertyCost))
-    {
-        cout << "Invalid amount entered! Please enter a valid Property cost.\n";
-        return;
-    }
-    cout << "Enter years of stay: ";
-    if (!isValidIntInput(input.years))
-    {
-        cout << "Invalid input! Please enter a valid year.\n";
-        return;
-    }
-    double emiInterestRate = 0.08;  // 8% annual interest
-    double rentIncreaseRate = 0.05; // 5% yearly rent hike
-    RentBuyResult result = rentVsBuyDecision(input, emiInterestRate, rentIncreaseRate);
-
-    cout << "\n--- Rent vs Buy Analysis ---\n";
-    cout << "Total cost if Renting (with yearly rent increase): Rs. " << fixed << setprecision(2) << result.totalRentCost << endl;
-    cout << "Total cost if Buying (with compound EMI & maintenance): Rs. " << fixed << setprecision(2) << result.totalBuyCost << endl;
-    cout << "Recommendation: " << result.recommendation << endl;
-    Sleep(2000);
-    cout << endl;
-}
 
 void runInventoryOptimizer()
 {
@@ -2485,7 +2519,7 @@ void displayHeader()
 {
     cout << "************************************************************" << endl;
     cout << "*                    WELCOME TO OUR                        *" << endl;
-    cout << "*                    College Connect                       *" << endl;
+    cout << "*                    Finance Manager                       *" << endl;
     cout << "*                                                          *" << endl;
     cout << "* Submitted to:                             Programmed by: *" << endl;
     cout << "* Dr. Suma Dawn                                      Rishu *" << endl;
