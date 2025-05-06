@@ -97,7 +97,6 @@ class Product
 public:
     int size;
     int profit;
-    int stock;
 };
 class InventoryResult
 {
