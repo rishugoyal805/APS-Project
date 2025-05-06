@@ -1773,16 +1773,18 @@ void runInventoryOptimizer()
         return;
     }
     vector<Product> products;
-    products.push_back({4, 40, 10});
-    products.push_back({3, 30, 8});
-    products.push_back({2, 20, 6});
-    products.push_back({1, 10, 12});
-    products.push_back({5, 50, 15});
-    products.push_back({6, 60, 20});
-    products.push_back({7, 70, 25});
-    products.push_back({8, 80, 30});
-    products.push_back({9, 90, 35});
-    products.push_back({10, 100, 40});
+    products.push_back({4, 400});
+    products.push_back({3, 300});
+    products.push_back({2, 200});
+    products.push_back({1, 100});
+    products.push_back({5, 500});
+    products.push_back({6, 600});
+    products.push_back({7, 700});
+    products.push_back({8, 800});
+    products.push_back({9, 900});
+    products.push_back({10, 1000});
+    products.push_back({11, 1100});
+    products.push_back({12, 1200});
     InventoryResult result = optimizeInventory(products, capacity);
     cout << "\n--- Inventory Optimization Result ---\n";
     cout << "Max Profit: " << result.totalProfit << "\n";
@@ -1797,8 +1799,6 @@ void runInventoryOptimizer()
     for (int idx : result.selectedProductIndices)
         usedCapacity += products[idx].size;
     cout << "Used Capacity: " << usedCapacity << " / " << capacity << endl;
-    if (result.totalProfit < 50)
-        cout << "Warning: Low profitability. Consider restocking high-profit items.\n";
     Sleep(2000);
     cout << endl;
 }
@@ -2127,9 +2127,9 @@ void menu(vector<int> &monthlyTotals)
                 runRentVsBuySimulator(monthlyTotals);
                 cout << "Summary:\n";
                 cout << "The function evaluates whether renting or buying a property is financially smarter by comparing cumulative rent costs (with yearly hikes) against compounded EMI payments and maintenance using basic financial modeling. "
-                     << "It uses decision-making strategies similar to LeetCode problems involving dynamic simulations and compound interest (e.g., 'Best Time to Buy and Sell Stock'). "
-                     << "Topics involved include Greedy methods and Financial Math modeling. "
+                     << "It uses decision-making strategies using simulation and Financial Math modeling. "
                      << "The time complexity is O(y) for y years of simulation, with additional O(1) compound interest math operations.\n\n";
+
                 Sleep(3000);
                 break;
             case 17:
